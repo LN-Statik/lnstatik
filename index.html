@@ -463,7 +463,7 @@ async function init(){
     if(!db||!id){clearTimeout(to);S.offline=true;$('#status').textContent='Bez ukladania';render();return}
     col=db.collection('data/users/'+id);
     col.onSnapshot(snap=>{const n={};snap.docs.forEach(d=>{if(d.exists)n[d.id]=d.data()});S.items=n;
-      if(!snap.metadata.fromCache){clearTimeout(to);$('#status').textContent='Uložené v OneDrive';autoImport()}render();refreshEditor()},
+      if(!snap.metadata.fromCache){clearTimeout(to);$('#status').textContent='Uložené v OneDrive';autoImport();setTimeout(autoMonthly,500)}render();refreshEditor()},
       ()=>{clearTimeout(to);$('#status').textContent='Spojenie sa prerušilo'});
   }catch(e){clearTimeout(to);S.offline=true;$('#status').textContent='Bez ukladania';render()}
 }
@@ -543,7 +543,7 @@ function vOverview(){
   const hoursY=list('time').filter(e=>new Date(e.start).getFullYear()===S.year).reduce((s,e)=>s+(e.end-e.start),0);
   const empty=!list('invoice').length;const expY=list('expense').reduce((s,x)=>s+expInYear(x,S.year).total,0);
   return `<div class="head"><div><h1>Prehľad roka</h1><p class="lead">Koľko si fakturoval za statiku a koľko si zarobil s kapelou.</p></div>${yearSel()}</div>
-  ${empty?importBox():''}
+  ${empty?importBox():''}${autoBox()}
   <div class="figs">
     <div class="fig"><div class="v">${eur0(invoiced)}</div><div class="k">Statika – fakturované (${inv.length})</div></div>
     <div class="fig"><div class="v">${eur0(paid)}</div><div class="k">Statika – uhradené</div></div>
@@ -964,8 +964,35 @@ function editClient(id){const c=id?{...S.items[id]}:{name:'',street:'',city:'',c
   <div class="fr"><div class="f"><label>Ulica</label><input name="street" value="${esc(c.street)}"></div><div class="f"><label>PSČ a mesto</label><input name="city" value="${esc(c.city)}"></div><div class="f"><label>Krajina</label><input name="country" value="${esc(c.country)}"></div></div>
   <div class="fr"><div class="f"><label>IČO</label><input name="ico" value="${esc(c.ico)}"></div><div class="f"><label>DIČ</label><input name="dic" value="${esc(c.dic)}"></div><div class="f"><label>IČ DPH</label><input name="icdph" value="${esc(c.icdph)}"></div></div>
   <div class="fr"><div class="f"><label>E-mail na faktúry</label><input name="email" type="email" value="${esc(c.email)}"></div><div class="f"><label>Poznámka k DPH</label><input name="vatNote" value="${esc(c.vatNote)}" placeholder="napr. nie je platca DPH"></div></div>
+  <div class="fr"><div class="f"><label>Hodinová sadzba pre túto firmu (€)</label><input name="autoRate" type="number" step="0.01" value="${esc(c.autoRate??settings().rate)}"></div><div class="f"></div></div>
+  <div class="panel" style="padding:14px 16px;margin-bottom:12px;background:var(--paper)">
+   <label class="chk" style="font-weight:600;color:var(--ink)"><input type="checkbox" name="autoInv" ${c.autoInv?'checked':''}> Automatická mesačná faktúra</label>
+   <div class="dim" style="font-size:13px;margin:4px 0 10px">Posledný deň v mesiaci appka vytvorí faktúru z odpracovaných hodín za mesiac × sadzba a pripraví e-mail. Odošleš ho ty.</div>
+   <div class="f"><label>Text položky na faktúre</label><input name="autoDesc" value="${esc(c.autoDesc||settings().desc||DESC)}"></div>
+  </div>
   <div class="mfoot"><div>${id?`<button type="button" class="btn q bad" onclick="if(sure(this,'Naozaj zmazať?')){del('${id}');closeModal()}">Zmazať</button>`:''}</div><div style="display:flex;gap:8px"><button type="button" class="btn" onclick="closeModal()">Zrušiť</button><button class="btn p">Uložiť</button></div></div></form>`);
-  $('#cf').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target);const o={kind:'client'};['name','street','city','country','ico','dic','icdph','email','vatNote'].forEach(k=>o[k]=(f.get(k)||'').trim());save(id||('cl_'+uid()),o);closeModal();toast('Odberateľ je uložený')}}
+  $('#cf').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target);const o={...(id?S.items[id]:{}),kind:'client'};['name','street','city','country','ico','dic','icdph','email','vatNote','autoDesc'].forEach(k=>o[k]=(f.get(k)||'').trim());
+    const was=!!o.autoInv;o.autoInv=!!f.get('autoInv');o.autoRate=f.get('autoRate')||'';if(o.autoInv&&!was)o.autoFrom=today().slice(0,7);save(id||('cl_'+uid()),o);closeModal();toast('Odberateľ je uložený')}}
+
+// ===== AUTOMATICKÉ FAKTÚRY =====
+const lastDay=(y,m)=>new Date(y,m,0).getDate();
+const ymOf=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+let autoRan=false;
+function autoMonthly(){if(autoRan)return;autoRan=true;const st=settings();const now=new Date();const made=[];
+  const dueM=[];{let y=now.getFullYear(),m=now.getMonth()+1;if(now.getDate()<lastDay(y,m)){m--;if(!m){m=12;y--}}for(let k=0;k<3;k++){dueM.push(`${y}-${pad(m)}`);m--;if(!m){m=12;y--}}}
+  list('client').filter(c=>c.autoInv).forEach(c=>{const k=fkey(c.name);
+    dueM.slice().reverse().forEach(ym=>{if(c.autoFrom&&ym<c.autoFrom)return;
+      if(list('invoice').some(i=>i.src&&i.src.auto===c.id+':'+ym))return;
+      const ents=list('time').filter(e=>!e.invoiceId&&fkey(e.client||e.project)===k&&ymOf(new Date(e.start))===ym).sort((a,b)=>a.start-b.start);
+      if(!ents.length)return;const ms=ents.reduce((s,e)=>s+(e.end-e.start),0);const q=Math.round(hrs(ms)*100)/100;
+      const [yy,mm]=ym.split('-').map(Number);const no=nextNumber();const iss=today();const{kind,id:cid,autoInv,autoRate,autoDesc,autoFrom,...cd}=c;
+      const inv={kind:'invoice',number:no,vs:no,clientId:c.id,client:cd,issueDate:iss,supplyDate:`${ym}-${pad(lastDay(yy,mm))}`,dueDate:addDays(iss,+st.dueDays||14),
+        note:`za obdobie ${pad(mm)}/${yy}`,items:[{desc:c.autoDesc||st.desc||DESC,qty:q,unit:'h',price:+(c.autoRate||st.rate)||0}],status:'draft',vatPayer:!!st.vatPayer,vatRate:st.vatRate,src:{times:ents.map(e=>e.id),auto:c.id+':'+ym}};
+      const iid='inv_'+no;save(iid,inv);ents.forEach(e=>save(e.id,{...S.items[e.id],invoiceId:iid}));made.push(iid)})});
+  if(made.length)S.autoMade=made}
+function autoBox(){const pend=list('invoice').filter(i=>i.src&&i.src.auto&&i.status==='draft').sort((a,b)=>String(a.number).localeCompare(String(b.number)));if(!pend.length)return '';
+  return `<div class="panel" style="margin-bottom:22px;border-color:var(--ink3)"><h3>Automatické faktúry na odoslanie</h3><table><tbody>${pend.map(i=>`<tr><td class="b">${esc(i.number)}</td><td>${esc(((i.client||{}).name||'').replace(/,? (a\.s\.|s\.r\.o\.)$/,''))}</td><td class="dim">${esc(i.note||'')} · ${esc(String((i.items[0]||{}).qty))} h</td><td class="r b">${eur(invTotal(i).total)}</td><td class="r" style="white-space:nowrap"><button class="btn sm" onclick="openInvoice('${i.id}')">Upraviť</button> <button class="btn sm p" onclick="sendInvoice('${i.id}')">Poslať</button></td></tr>`).join('')}</tbody></table>
+   <div class="dim" style="font-size:13px;margin-top:8px">Vytvorené z odpracovaných hodín. Skontroluj, prípadne uprav, a pošli. Po odoslaní klikni na „Označiť ako odoslané“.</div></div>`}
 
 // ===== TIME =====
 function clientNames(){return list('client').map(c=>c.name).sort()}
@@ -1041,7 +1068,7 @@ function editTime(id){if(id&&S.mode==='time'&&S.firm&&fkey((S.items[id]||{}).cli
 function periodNote(ents){const ms=[...new Set(ents.map(e=>{const d=new Date(e.start);return d.getFullYear()*100+d.getMonth()+1}))].sort();if(!ms.length)return'';
   const f=x=>pad(x%100),y=x=>Math.floor(x/100);const a=ms[0],b=ms[ms.length-1];
   if(a===b)return `za obdobie ${f(a)}/${y(a)}`;if(y(a)===y(b))return `za obdobie ${f(a)}-${f(b)}/${y(b)}`;return `za obdobie ${f(a)}/${y(a)} ~ ${f(b)}/${y(b)}`}
-function invoiceFromTime(cname){const st=settings();const ents=list('time').filter(e=>!e.invoiceId&&fkey(e.client||e.project||'Bez odberateľa')===fkey(cname)).sort((a,b)=>a.start-b.start);
+function invoiceFromTime(cname){const st0=settings();const clr=list('client').find(c=>fkey(c.name)===fkey(cname));const st={...st0,rate:clr&&clr.autoRate?+clr.autoRate:st0.rate};const ents=list('time').filter(e=>!e.invoiceId&&fkey(e.client||e.project||'Bez odberateľa')===fkey(cname)).sort((a,b)=>a.start-b.start);
   const tot=ents.reduce((s,e)=>s+(e.end-e.start),0);
   modal(`<h2>Vyfakturovať čas: ${esc(cname)}</h2>
   <div style="max-height:260px;overflow:auto;margin-bottom:14px"><table><tbody>${ents.map(e=>`<tr><td><label class="chk"><input type="checkbox" class="te" value="${e.id}" checked> ${new Date(e.start).toLocaleDateString('sk-SK')} ${esc(e.note)}</label></td><td class="r">${fh(e.end-e.start)}</td></tr>`).join('')}</tbody></table></div>
