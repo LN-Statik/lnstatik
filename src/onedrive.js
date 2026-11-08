@@ -57,8 +57,7 @@ async function push(){
   if(r.status===412||r.status===409){merge(await pull());emit(false);return push()}
   if(!r.ok)throw new Error('write '+r.status);
   etag=(await r.json()).eTag;
-  try{const d=new Date().toISOString().slice(0,10);if(lastSnap!==d){lastSnap=d;
-    await g(`/me/drive/root:/${enc(base+'/'+DATA_DIR+'/zalohy/lnstatik_data_'+d+'.json')}:/content`,{method:'PUT',headers:{'Content-Type':'application/json'},body})}}catch(e){console.warn('snapshot',e)}
+  try{const d=new Date().toISOString().slice(0,10);if(lastSnap!==d){lastSnap=d;snapshot(d,body)}}catch(e){console.warn('snapshot',e)}
   for(const [id,ts] of Object.entries(sent))if(dirty[id]===ts)delete dirty[id]}
 function schedule(){clearTimeout(timer);setStatus('Ukladám…');timer=setTimeout(flush,800)}
 async function flush(){if(saving)return saving;
@@ -75,6 +74,14 @@ const col={doc:id=>({
     set:async d=>{state.items[id]=JSON.parse(JSON.stringify(d));state.u[id]=Date.now();delete state.del[id];dirty[id]=state.u[id];schedule()},
     delete:async()=>{delete state.items[id];delete state.u[id];state.del[id]=Date.now();dirty[id]=state.del[id];schedule()}}),
   onSnapshot:(f,err)=>{listeners.push(f);ready.then(()=>emit(false)).catch(e=>err&&err(e));return()=>{listeners=listeners.filter(x=>x!==f)}}};
+
+// denná záloha: gzip, ponechá 7 posledných dní + 1 za každý mesiac (12 mesiacov)
+async function snapshot(d,body){const dir=base+'/'+DATA_DIR+'/zalohy';let blob=new Blob([body],{type:'application/json'}),ext='.json';
+  if(window.CompressionStream){blob=await new Response(blob.stream().pipeThrough(new CompressionStream('gzip'))).blob();ext='.json.gz'}
+  await g(`/me/drive/root:/${enc(dir+'/lnstatik_data_'+d+ext)}:/content`,{method:'PUT',headers:{'Content-Type':'application/octet-stream'},body:blob});
+  const r=await g(`/me/drive/root:/${enc(dir)}:/children?$select=id,name&$top=500`);if(!r.ok)return;const files=((await r.json()).value||[]).map(f=>({...f,d:(f.name.match(/(\d{4}-\d{2}-\d{2})/)||[])[1]})).filter(f=>f.d).sort((a,b)=>b.d.localeCompare(a.d));
+  const keep=new Set();files.slice(0,7).forEach(f=>keep.add(f.id));const months={};files.forEach(f=>{const m=f.d.slice(0,7);if(!months[m])months[m]=f});Object.values(months).sort((a,b)=>b.d.localeCompare(a.d)).slice(0,12).forEach(f=>keep.add(f.id));
+  for(const f of files)if(!keep.has(f.id))await g(`/me/drive/items/${encodeURIComponent(f.id)}`,{method:'DELETE'})}
 
 // ---------- prílohy ----------
 async function attFolder(){return base+'/'+DATA_DIR+'/'+ATT_DIR}
