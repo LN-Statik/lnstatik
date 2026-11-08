@@ -107,8 +107,8 @@ async function unlock(user,pw){
 }
 function loginView(msg){
   $('#app').innerHTML=`<div class="login"><form class="card" id="lf"><h1 style="margin-bottom:20px">SB Kalendár</h1>
-  <label for="u">Meno</label><input id="u" autocomplete="username" required>
-  <label for="p">Heslo</label><input id="p" type="password" inputmode="numeric" autocomplete="current-password" required>
+  <label for="u">Meno</label><input id="u" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+  <label for="p">Heslo</label><input id="p" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" required>
   <button class="btn" id="go">Prihlásiť sa</button><div class="err" id="err">${esc(msg||'')}</div></form></div>`;
   $('#u').focus();
   $('#lf').onsubmit=async e=>{e.preventDefault();const b=$('#go');b.disabled=true;b.textContent='Overujem…';
