@@ -453,7 +453,7 @@ const IMPORT={biz:{},clients:[],invoices:[]};
 
 // ===== state / storage =====
 const VIEWS=['prehlad','faktury','cas','odberatelia','vydavky','kapela','nastavenia'];
-const S={items:{},view:VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'prehlad',year:new Date().getFullYear(),invF:'all',evF:'upcoming',timeF:'month',mode:'start'};
+const S={items:{},view:VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'prehlad',year:new Date().getFullYear(),invF:'all',evF:'year',timeF:'month',mode:'start'};
 let col=null;const Q={};
 const DEF={kind:'settings',biz:{...IMPORT.biz},vatPayer:false,vatRate:23,rate:25,dueDays:14,prefix:'',desc:DESC,sign:'',logo:'',running:null,pin:''};
 function settings(){const s=S.items.settings||{};const b={...DEF.biz};Object.entries(s.biz||{}).forEach(([k,v])=>{if(v)b[k]=v});
