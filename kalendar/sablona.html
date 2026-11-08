@@ -111,7 +111,7 @@ function evCard(e){const s=EST[e.status]||EST.lead;const f=+e.fee||0,n=+e.fuel||
     <div class="t">${esc(e.title||e.type)}<span class="tag ${s[1]}">${s[0]}</span></div>
     <div class="m">${esc([e.type,e.time,e.venue,e.city].filter(Boolean).join(' · '))}</div></div><span class="chev" aria-hidden="true">›</span></summary>
    <div class="body">
-   ${f?`<div class="money"><span>Dohodnuté <b>${eur(f)}</b></span>${n?`<span>Nafta navyše <b>${eur(n)}</b></span>`:''}</div>`:''}
+   ${f||n?`<div class="money"><span>Dohodnuté <b>${eur(f)}</b></span>${n?`<span>Nafta <b>${eur(n)}</b></span><span>Spolu za akciu <b>${eur(f+n)}</b></span>`:''}</div>`:''}
    ${+e.deposit?`<div class="money"><span>Záloha <b>${eur(e.deposit)}</b>${e.depositBy?` (u ${esc({Laci:'Laciho',Tomi:'Tomiho'}[e.depositBy]||e.depositBy)})`:''}<span class="tag ${e.depositPaid?'ok':'warn'}">${e.depositPaid?'prijatá':'čaká sa'}</span></span>${f?`<span>Doplatok <b>${eur(f+n-(+e.deposit||0))}</b></span>`:''}</div>`:''}
    ${e.contact||e.contactEmail?`<div class="m" style="margin-top:8px">Kontakt: ${esc([e.contact,e.contactEmail].filter(Boolean).join(', '))}</div>`:''}
    ${e.notes?`<div class="note">${esc(e.notes)}</div>`:''}
@@ -124,7 +124,7 @@ function render(){
   const sum=a=>a.reduce((s,e)=>s+(+e.fee||0),0),fuel=a=>a.reduce((s,e)=>s+(+e.fuel||0),0),pm=a=>a.reduce((s,e)=>s+(+e.fee?perMember(e):0),0);
   const up=all.filter(e=>e.date>=t&&e.status!=='cancel');
   const allY=all.filter(e=>(e.date||'').startsWith(y)).sort((a,b)=>((b.date||'')+(b.time||'')).localeCompare((a.date||'')+(a.time||'')));
-  const byM=Array(12).fill(0).map(()=>({n:0,s:0,p:0}));gigs.forEach(e=>{const m=+e.date.slice(5,7)-1;byM[m].n++;byM[m].s+=+e.fee||0;byM[m].p+=+e.fee?perMember(e):0});
+  const byM=Array(12).fill(0).map(()=>({n:0,s:0,p:0}));gigs.forEach(e=>{const m=+e.date.slice(5,7)-1;byM[m].n++;byM[m].s+=(+e.fee||0)+(+e.fuel||0);byM[m].p+=+e.fee?perMember(e):0});
   $('#app').innerHTML=`<header><div class="row"><div><h1>SB Kalendár</h1><small>Aktualizované ${esc(DATA.updated||'')}</small></div>
    <div style="display:flex;gap:10px;align-items:center"><div class="yr"><button aria-label="Predošlý rok" id="yp">‹</button><span>${YEAR}</span><button aria-label="Ďalší rok" id="yn">›</button></div><button class="out" id="lo">Odhlásiť</button></div></div></header>
   <main>
@@ -137,8 +137,7 @@ function render(){
    <h2>Akcie v roku ${y}</h2>
    ${(()=>{const l=allY.filter(e=>!up[0]||e.id!==up[0].id);return l.length?l.map(evCard).join(''):'<div class="empty">V tomto roku žiadne ďalšie akcie.</div>'})()}
    <h2>Prehľad po mesiacoch, ${y}</h2>
-   ${gigs.length?`<table><thead><tr><th>Mesiac</th><th class="r">Akcií</th><th class="r">Spolu</th></tr></thead><tbody>${byM.map((v,i)=>v.n?`<tr><td>${MONF[i]}</td><td class="r">${v.n}</td><td class="r">${eur(v.s)}</td></tr>`:'').join('')}<tr><td><b>Spolu</b></td><td class="r"><b>${gigs.length}</b></td><td class="r"><b>${eur(sum(gigs))}</b></td></tr></tbody></table>`:'<div class="empty">V tomto roku zatiaľ žiadne akcie.</div>'}
-   <div class="foot">Nafta sa platí navyše a rozdeľuje sa zvlášť.</div>
+   ${gigs.length?`<table><thead><tr><th>Mesiac</th><th class="r">Akcií</th><th class="r">Spolu</th></tr></thead><tbody>${byM.map((v,i)=>v.n?`<tr><td>${MONF[i]}</td><td class="r">${v.n}</td><td class="r">${eur(v.s)}</td></tr>`:'').join('')}<tr><td><b>Spolu</b></td><td class="r"><b>${gigs.length}</b></td><td class="r"><b>${eur(sum(gigs)+fuel(gigs))}</b></td></tr></tbody></table>`:'<div class="empty">V tomto roku zatiaľ žiadne akcie.</div>'}
   </main>`;
   $('#yp').onclick=()=>{YEAR--;render()};$('#yn').onclick=()=>{YEAR++;render()};
   $('#lo').onclick=()=>{DATA=null;try{sessionStorage.removeItem('kap')}catch(x){}loginView()};
