@@ -90,8 +90,8 @@ async function openAtt(id){const w=window.open('about:blank','_blank');
 document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="/_blob/"]');if(!a)return;e.preventDefault();e.stopPropagation();openAtt(decodeURIComponent(a.getAttribute('href').slice(7)))},true);
 
 // ---------- Outlook koncept ----------
-AUTH.mailDraft=async({subject,html,to,pdf,logo})=>{const t=await token(['Mail.ReadWrite']);
-  const att=[{'@odata.type':'#microsoft.graph.fileAttachment',name:pdf.name,contentType:'application/pdf',contentBytes:pdf.b64}];
+AUTH.mailDraft=async({subject,html,to,pdfs,logo})=>{const t=await token(['Mail.ReadWrite']);
+  const att=pdfs.map(p=>({'@odata.type':'#microsoft.graph.fileAttachment',name:p.name,contentType:'application/pdf',contentBytes:p.b64}));
   if(logo)att.push({'@odata.type':'#microsoft.graph.fileAttachment',name:'lnstatik.png',contentType:'image/png',contentBytes:logo,isInline:true,contentId:'lnlogo@lnstatik'});
   const r=await fetch(GRAPH+'/me/messages',{method:'POST',headers:{Authorization:'Bearer '+t,'Content-Type':'application/json'},
     body:JSON.stringify({subject,body:{contentType:'HTML',content:html},toRecipients:String(to||'').split(/[,;]\s*/).filter(Boolean).map(a=>({emailAddress:{address:a}})),attachments:att})});

@@ -343,8 +343,8 @@ async function openAtt(id){const w=window.open('about:blank','_blank');
 document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="/_blob/"]');if(!a)return;e.preventDefault();e.stopPropagation();openAtt(decodeURIComponent(a.getAttribute('href').slice(7)))},true);
 
 // ---------- Outlook koncept ----------
-AUTH.mailDraft=async({subject,html,to,pdf,logo})=>{const t=await token(['Mail.ReadWrite']);
-  const att=[{'@odata.type':'#microsoft.graph.fileAttachment',name:pdf.name,contentType:'application/pdf',contentBytes:pdf.b64}];
+AUTH.mailDraft=async({subject,html,to,pdfs,logo})=>{const t=await token(['Mail.ReadWrite']);
+  const att=pdfs.map(p=>({'@odata.type':'#microsoft.graph.fileAttachment',name:p.name,contentType:'application/pdf',contentBytes:p.b64}));
   if(logo)att.push({'@odata.type':'#microsoft.graph.fileAttachment',name:'lnstatik.png',contentType:'image/png',contentBytes:logo,isInline:true,contentId:'lnlogo@lnstatik'});
   const r=await fetch(GRAPH+'/me/messages',{method:'POST',headers:{Authorization:'Bearer '+t,'Content-Type':'application/json'},
     body:JSON.stringify({subject,body:{contentType:'HTML',content:html},toRecipients:String(to||'').split(/[,;]\s*/).filter(Boolean).map(a=>({emailAddress:{address:a}})),attachments:att})});
@@ -658,7 +658,7 @@ function drawEditor(){
     </div>
     <div class="mfoot" style="position:sticky;bottom:-40px;background:var(--surface);padding:14px 0 6px;border-top:1px solid var(--line2)">
       <div>${id?`<button type="button" class="btn q bad" onclick="if(sure(this,'Naozaj zmazať?'))deleteInvoice('${id}')">Zmazať</button>`:''}</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" id="pdfBtn">Stiahnuť PDF</button><button class="btn" value="save">Uložiť</button><button class="btn p" value="send">Uložiť a poslať</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${id?'<button type="button" class="btn" id="splitBtn">Rozdeliť na dve</button>':''}<button type="button" class="btn" id="pdfBtn">Stiahnuť PDF</button><button class="btn" value="save">Uložiť</button><button class="btn p" value="send">Uložiť a poslať</button></div>
     </div>
    </form></div>
    <div class="prev" id="prev"><div class="paperwrap" id="pw"></div></div>
@@ -673,6 +673,7 @@ function drawEditor(){
   f.addEventListener('change',e=>{if(e.target.name==='clientId'){$('#manual').style.display=f.clientId.value?'none':'';}if(e.target.name==='vatPayer')$('#vatRow').style.display=f.vatPayer.checked?'':'none';readForm();updPreview()});
   $('#addIt').onclick=()=>{ED.inv.items.push({desc:'',qty:1,unit:'ks',price:0});drawItems();updPreview()};
   $('#pdfBtn').onclick=e=>{readForm();downloadPdf(ED.inv,e.target)};
+  const sb=$('#splitBtn');if(sb)sb.onclick=()=>{readForm();const id2=commitInvoice();if(id2)splitInvoice(id2)};
   f.onsubmit=e=>{e.preventDefault();readForm();const act=e.submitter&&e.submitter.value;const id2=commitInvoice();if(id2){closeEditor();if(act==='send')sendInvoice(id2);else toast('Faktúra je uložená')}};
   window.addEventListener('resize',fitPreview);
 }
@@ -788,6 +789,17 @@ function fillTpl(tpl,inv){const st=settings();const t=invTotal(inv);
 function mailText(inv){const st=settings();const b=st.biz;const tpl=isDefBody(st.mailBody)?DEF_BODY:st.mailBody;
   const sigTxt=['',b.contact||b.name,'LN · STATIK – statika stavieb',[b.phone,b.email].filter(Boolean).join('  |  ')].join('\n');
   return {subject:fillTpl(st.mailSubj||DEF_SUBJ,inv),body:fillTpl(tpl,inv),sig:sigTxt}}
+const joinNo=a=>a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+' a '+a[a.length-1];
+function mailTextMulti(invs){if(invs.length<2)return mailText(invs[0]);const st=settings();const m=mailText(invs[0]);
+  const tpl=isDefBody(st.mailBody)?DEF_BODY:st.mailBody;const nums=joinNo(invs.map(i=>i.number));
+  const notes=invs.map(i=>i.note&&i.note!=='-'?i.note:'');const same=notes.every(n=>n===notes[0]);
+  const pozn=same?notes[0]:invs.map((i,k)=>`č. ${i.number}${notes[k]?' – '+notes[k]:''}`).join('\n');
+  const tot=invs.reduce((s,i)=>s+invTotal(i).total,0);
+  const pl=s=>s.replace(/faktúru č\./g,'faktúry č.').replace(/Faktúru č\./g,'Faktúry č.').replace(/Faktúra č\./g,'Faktúry č.').replace(/faktúra č\./g,'faktúry č.');
+  const pre=t=>pl(t).replace(/\{cislo\}/g,nums).replace(/\{poznamka\}/g,pozn).replace(/\{suma\}/g,eur(tot)).replace(/\{vs\}/g,invs.map(i=>i.vs).join(', '));
+  return {subject:fillTpl(pre(st.mailSubj||DEF_SUBJ),invs[0]),body:fillTpl(pre(tpl),invs[0]),sig:m.sig}}
+async function pdfB64(inv){const pdf=await makePdf(inv);const buf=new Uint8Array(await pdf.arrayBuffer());let bin='';for(let i=0;i<buf.length;i+=0x8000)bin+=String.fromCharCode.apply(null,buf.subarray(i,i+0x8000));return btoa(bin)}
+const pdfName=inv=>`Faktura_${String(inv.number).replace(/[^\w-]/g,'')}.pdf`;
 async function logoPng(){const svg=lnMark(80,'#9AA0A8','#1F2328').replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" ');
   const img=new Image();await new Promise((ok,er)=>{img.onload=ok;img.onerror=er;img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)});
   try{await document.fonts.load('200 34px Outfit')}catch(e){}
@@ -805,10 +817,9 @@ function mailHtml(m){const st=settings();const b=st.biz;const e=s=>esc(s).replac
 </td></tr></table></body></html>`}
 const b64u=s=>{const b=new TextEncoder().encode(s);let r='';for(let i=0;i<b.length;i+=0x8000)r+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return btoa(r)};
 const wrap76=s=>s.replace(/(.{76})/g,'$1\r\n');
-async function makeEml(inv,to){const m=mailText(inv);const pdf=await makePdf(inv);const buf=new Uint8Array(await pdf.arrayBuffer());
-  let bin='';for(let i=0;i<buf.length;i+=0x8000)bin+=String.fromCharCode.apply(null,buf.subarray(i,i+0x8000));
+async function makeEml(invs,to){invs=[].concat(invs);const inv=invs[0];const m=mailTextMulti(invs);const pdfs=[];for(const x of invs)pdfs.push({fn:pdfName(x),b64:await pdfB64(x)});
   let logo='';try{logo=await logoPng()}catch(e){}
-  const fn=`Faktura_${String(inv.number).replace(/[^\w-]/g,'')}.pdf`;const t=Date.now();const B1='----=_LNS_mix_'+t,B2='----=_LNS_rel_'+t,B3='----=_LNS_alt_'+t;
+  const fn=invs.length>1?`Faktury_${invs.map(x=>String(x.number).replace(/[^\w-]/g,'')).join('_')}.pdf`:pdfName(inv);const t=Date.now();const B1='----=_LNS_mix_'+t,B2='----=_LNS_rel_'+t,B3='----=_LNS_alt_'+t;
   const alt=[`--${B3}`,'Content-Type: text/plain; charset="UTF-8"','Content-Transfer-Encoding: base64','',wrap76(b64u(m.body+'\n'+m.sig)),'',
     `--${B3}`,'Content-Type: text/html; charset="UTF-8"','Content-Transfer-Encoding: base64','',wrap76(b64u(mailHtml(m))),'',`--${B3}--`];
   const rel=[`--${B2}`,`Content-Type: multipart/alternative; boundary="${B3}"`,'',...alt,''];
@@ -816,40 +827,74 @@ async function makeEml(inv,to){const m=mailText(inv);const pdf=await makePdf(inv
   rel.push(`--${B2}--`);
   const eml=[`To: ${to||''}`,`Subject: =?UTF-8?B?${b64u(m.subject)}?=`,'X-Unsent: 1','MIME-Version: 1.0',`Content-Type: multipart/mixed; boundary="${B1}"`,'',
     `--${B1}`,`Content-Type: multipart/related; boundary="${B2}"; type="multipart/alternative"`,'',...rel,'',
-    `--${B1}`,`Content-Type: application/pdf; name="${fn}"`,`Content-Disposition: attachment; filename="${fn}"`,'Content-Transfer-Encoding: base64','',wrap76(btoa(bin)),'',`--${B1}--`,''].join('\r\n');
+    ...pdfs.flatMap(p=>[`--${B1}`,`Content-Type: application/pdf; name="${p.fn}"`,`Content-Disposition: attachment; filename="${p.fn}"`,'Content-Transfer-Encoding: base64','',wrap76(p.b64),'']),`--${B1}--`,''].join('\r\n');
   return {eml,fn:fn.replace('.pdf','.eml')}}
-async function outlookDraft(inv,to,btn){const o=btn.textContent;btn.disabled=true;btn.textContent='Pripravujem e-mail…';
+async function outlookDraft(invs,to,btn){invs=[].concat(invs);const inv=invs[0];const o=btn.textContent;btn.disabled=true;btn.textContent='Pripravujem e-mail…';
   if(window.AUTH&&AUTH.ok&&AUTH.mailDraft){const w=window.open('about:blank','_blank');
-    try{const m=mailText(inv);const pdf=await makePdf(inv);const buf=new Uint8Array(await pdf.arrayBuffer());let bin='';for(let i=0;i<buf.length;i+=0x8000)bin+=String.fromCharCode.apply(null,buf.subarray(i,i+0x8000));
+    try{const m=mailTextMulti(invs);const pdfs=[];for(const x of invs)pdfs.push({name:pdfName(x),b64:await pdfB64(x)});
       let logo='';try{logo=await logoPng()}catch(e){}
-      const link=await AUTH.mailDraft({subject:m.subject,html:mailHtml(m),to,pdf:{name:`Faktura_${String(inv.number).replace(/[^\w-]/g,'')}.pdf`,b64:btoa(bin)},logo});
+      const link=await AUTH.mailDraft({subject:m.subject,html:mailHtml(m),to,pdfs,logo});
       if(w)w.location=link;else location.href=link;toast('E-mail je pripravený v Outlooku (aj v Konceptoch)')}
     catch(e){console.error(e);if(w)w.close();toast('E-mail sa nepodarilo vytvoriť v Outlooku'+(e&&e.message?': '+e.message:''))}
     btn.disabled=false;btn.textContent=o;return}
-  try{if(typeof JSZip==='undefined')throw new Error('zip');const {eml,fn}=await makeEml(inv,to);const z=new JSZip();z.file(fn,eml);
+  try{if(typeof JSZip==='undefined')throw new Error('zip');const {eml,fn}=await makeEml(invs,to);const z=new JSZip();z.file(fn,eml);
     const blob=await z.generateAsync({type:'blob'});const dl=await claude.use('downloads');
     if(!dl)toast('Sťahovanie tu nie je dostupné.');
     else{await dl.save({filename:fn.replace('.eml','')+'_email.zip',data:blob});toast('Stiahnuté. Otvor ZIP a dvakrát klikni na e-mail.')}}
   catch(e){if(!(e&&e.code==='declined'))toast('E-mail sa nepodarilo pripraviť')}
   btn.disabled=false;btn.textContent=o}
-function sendInvoice(id){const inv={...S.items[id]};const m=mailText(inv);const to=(inv.client||{}).email||'';
-  const mk=a=>`mailto:${encodeURIComponent(a)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent(m.body)}`;
-  modal(`<h2>Poslať faktúru ${esc(inv.number)}</h2>
+function sendInvoice(id,extra){const base={...S.items[id]};const to=(base.client||{}).email||'';
+  const ck=x=>x.clientId?'id:'+x.clientId:'n:'+((x.client||{}).name||'');
+  const others=list('invoice').filter(x=>x.id!==id&&ck(x)===ck(base)&&(x.status!=='paid'||(extra||[]).includes(x.id))).sort((a,b)=>String(b.number).localeCompare(String(a.number))).slice(0,8);
+  let sel=[id,...(extra||[]).filter(x=>others.some(o=>o.id===x))];
+  const invs=()=>sel.map(x=>({...S.items[x],id:x})).sort((a,b)=>String(a.number).localeCompare(String(b.number)));
+  const mk=(a,m)=>`mailto:${encodeURIComponent(a)}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent(m.body)}`;
+  modal(`<h2 id="sh">Poslať faktúru</h2>
   <div class="f"><label>Komu</label><input id="to" type="email" value="${esc(to)}" placeholder="e-mail odberateľa"></div>
-  <div class="f"><label>Predmet</label><input readonly value="${esc(m.subject)}"></div>
-  <div class="f"><label>Text <span class="dim" style="font-weight:400">(šablónu upravíš v Nastaveniach)</span></label><pre class="mail">${esc(m.body)}<span style="display:block;border-top:1px solid var(--line);margin-top:10px;padding-top:8px;color:var(--ink2)">${esc(m.sig.trim())}
-<i>+ logo LN · STATIK</i></span></pre></div>
+  ${others.length?`<div class="f"><label>Faktúry v e-maile</label><div style="display:flex;flex-direction:column;gap:4px">
+    <label class="chk"><input type="checkbox" checked disabled> č. ${esc(base.number)} <span class="dim">${esc(base.note&&base.note!=='-'?base.note:'')} · ${eur(invTotal(base).total)}</span></label>
+    ${others.map(o=>`<label class="chk"><input type="checkbox" class="xinv" value="${o.id}" ${sel.includes(o.id)?'checked':''}> č. ${esc(o.number)} <span class="dim">${esc(o.note&&o.note!=='-'?o.note:'')} · ${eur(invTotal(o).total)}</span></label>`).join('')}
+  </div><div class="dim" style="font-size:13px;margin-top:4px">Zaškrtnuté faktúry pôjdu spolu v jednom e-maile.</div></div>`:''}
+  <div class="f"><label>Predmet</label><input id="subj" readonly></div>
+  <div class="f"><label>Text <span class="dim" style="font-weight:400">(šablónu upravíš v Nastaveniach)</span></label><pre class="mail" id="bodyPrev"></pre></div>
   <div class="panel" style="padding:14px 16px;margin-bottom:12px;background:var(--paper)">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><b>E-mail pre Outlook s prílohou</b><div class="dim" style="font-size:13px">${window.AUTH?'Otvorí sa rovno v Outlooku aj s PDF a podpisom. Stačí skontrolovať a kliknúť Odoslať.':'Stiahne sa ZIP. Otvor ho a dvakrát klikni na e-mail, Outlook ho otvorí aj s PDF. Stačí kliknúť Odoslať.'}</div></div><button class="btn p" id="ol">${window.AUTH?'Otvoriť v Outlooku':'Pripraviť e-mail'}</button></div>
   </div>
-  <div class="mfoot"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="dl">Len PDF</button><a class="btn" id="mt" href="${esc(mk(to))}" target="_blank" rel="noopener">Otvoriť v pošte bez prílohy</a></div>
-  <div style="display:flex;gap:8px">${inv.status==='draft'?'<button class="btn" id="ms">Označiť ako odoslanú</button>':''}<button class="btn q" onclick="closeModal()">Hotovo</button></div></div>`);
-  const saveTo=()=>{const em=$('#to').value.trim();const cur=S.items[id];if(em&&em!==(cur.client||{}).email){save(id,{...cur,client:{...cur.client,email:em}});if(cur.clientId&&S.items[cur.clientId]&&S.items[cur.clientId].email!==em)save(cur.clientId,{...S.items[cur.clientId],email:em})}return em};
-  $('#to').oninput=()=>$('#mt').href=mk($('#to').value);
-  $('#ol').onclick=e=>{const em=saveTo();outlookDraft({...S.items[id]},em,e.target)};
-  $('#dl').onclick=e=>downloadPdf(inv,e.target);
-  const ms=$('#ms');if(ms)ms.onclick=()=>{saveTo();const cur=S.items[id];save(id,{...cur,status:'sent',sentAt:Date.now()});closeModal();toast('Faktúra je označená ako odoslaná')};
+  <div class="mfoot"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="dl">Len PDF</button><a class="btn" id="mt" target="_blank" rel="noopener">Otvoriť v pošte bez prílohy</a></div>
+  <div style="display:flex;gap:8px"><button class="btn" id="ms">Označiť ako odoslané</button><button class="btn q" onclick="closeModal()">Hotovo</button></div></div>`);
+  const draw=()=>{const v=invs();const m=mailTextMulti(v);$('#sh').textContent=v.length>1?`Poslať faktúry ${joinNo(v.map(x=>x.number))}`:`Poslať faktúru ${base.number}`;
+    $('#subj').value=m.subject;$('#bodyPrev').innerHTML=`${esc(m.body)}<span style="display:block;border-top:1px solid var(--line);margin-top:10px;padding-top:8px;color:var(--ink2)">${esc(m.sig.trim())}\n<i>+ logo LN · STATIK${v.length>1?' · '+v.length+' PDF prílohy':''}</i></span>`;
+    $('#mt').href=mk($('#to').value,m);const ms=$('#ms');ms.style.display=v.some(x=>x.status==='draft')?'':'none'};
+  document.querySelectorAll('.xinv').forEach(c=>c.onchange=()=>{sel=[id,...[...document.querySelectorAll('.xinv:checked')].map(x=>x.value)];draw()});
+  const saveTo=()=>{const em=$('#to').value.trim();sel.forEach(x=>{const cur=S.items[x];if(em&&em!==(cur.client||{}).email)save(x,{...cur,client:{...cur.client,email:em}})});
+    const cid=base.clientId;if(em&&cid&&S.items[cid]&&S.items[cid].email!==em)save(cid,{...S.items[cid],email:em});return em};
+  $('#to').oninput=draw;
+  $('#ol').onclick=e=>{const em=saveTo();outlookDraft(invs(),em,e.target)};
+  $('#dl').onclick=async e=>{for(const v of invs())await downloadPdf(v,e.target)};
+  $('#ms').onclick=()=>{saveTo();sel.forEach(x=>{const cur=S.items[x];if(cur.status==='draft')save(x,{...cur,status:'sent',sentAt:Date.now()})});closeModal();toast(sel.length>1?'Faktúry sú označené ako odoslané':'Faktúra je označená ako odoslaná')};
+  draw();
 }
+function splitInvoice(id){const inv=S.items[id];if(!inv)return;const its=inv.items||[];const tot=invTotal(inv).total;const multi=its.length>1;
+  const no2=nextNumber();
+  modal(`<h2>Rozdeliť faktúru ${esc(inv.number)} na dve</h2>
+  <p class="dim" style="margin-top:0">Vznikne nová faktúra č. <b>${esc(no2)}</b> pre toho istého odberateľa s rovnakými dátumami. Obe potom môžeš poslať jedným e-mailom.</p>
+  ${multi?`<div class="f"><label>Ktoré položky presunúť do novej faktúry</label>${its.map((it,i)=>`<label class="chk"><input type="checkbox" class="mv" value="${i}" ${i===its.length-1?'checked':''}> ${esc(it.desc||'Položka')} <span class="dim">· ${eur((+it.qty||0)*(+it.price||0))}</span></label>`).join('')}</div>`
+  :`<div class="fr"><div class="f"><label>Suma faktúry ${esc(inv.number)} (€)</label><input id="a1" type="number" step="0.01" value="${(Math.round(tot/2*100)/100)}"></div><div class="f"><label>Suma faktúry ${esc(no2)} (€)</label><input id="a2" type="number" step="0.01" value="${(Math.round((tot-Math.round(tot/2*100)/100)*100)/100)}"></div></div>
+   <div class="dim" style="font-size:13px;margin:-4px 0 12px">Spolu ${eur(tot)}</div>`}
+  <div class="f"><label>Poznámka faktúry ${esc(inv.number)}</label><input id="n1" value="${esc(inv.note||'')}"></div>
+  <div class="f"><label>Poznámka faktúry ${esc(no2)}</label><input id="n2" value="${esc(inv.note||'')}"></div>
+  <div class="mfoot"><div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="closeModal()">Zrušiť</button><button class="btn" id="spOnly">Rozdeliť</button><button class="btn p" id="spSend">Rozdeliť a poslať obe</button></div></div>`);
+  if(!multi){const a1=$('#a1'),a2=$('#a2');a1.oninput=()=>a2.value=Math.round((tot-(+a1.value||0))*100)/100;a2.oninput=()=>a1.value=Math.round((tot-(+a2.value||0))*100)/100}
+  const go=send=>{let i1,i2;
+    if(multi){const mv=[...document.querySelectorAll('.mv:checked')].map(c=>+c.value);if(!mv.length||mv.length===its.length){toast('Vyber aspoň jednu položku, ale nie všetky');return}
+      i1=its.filter((x,i)=>!mv.includes(i));i2=its.filter((x,i)=>mv.includes(i))}
+    else{const v1=+$('#a1').value||0,v2=+$('#a2').value||0;if(v1<=0||v2<=0){toast('Obe sumy musia byť väčšie ako 0');return}
+      const it=its[0]||{desc:settings().desc||DESC,qty:1,unit:'ks',price:0};const q=+it.qty||1;i1=[{...it,price:Math.round(v1/q*100)/100}];i2=[{...it,price:Math.round(v2/q*100)/100}]}
+    const{id:_x,...rest}=inv;const id2='inv_'+no2;
+    save(id,{...rest,items:i1,note:$('#n1').value});
+    save(id2,{...rest,number:no2,vs:no2,items:i2,note:$('#n2').value,status:inv.status==='paid'?'paid':'draft',src:{},sentAt:undefined,splitFrom:inv.number});
+    closeModal();if(ED)closeEditor();toast(`Rozdelené na ${inv.number} a ${no2}`);if(send)setTimeout(()=>sendInvoice(id,[id2]),50)};
+  $('#spOnly').onclick=()=>go(false);$('#spSend').onclick=()=>go(true)}
 
 // ===== CLIENTS =====
 // ===== VÝDAVKY =====
