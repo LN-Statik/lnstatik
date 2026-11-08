@@ -29,7 +29,7 @@ async function g(path,opt={}){
   return fetch(path.startsWith('http')?path:GRAPH+path,{...opt,headers:{Authorization:'Bearer '+t,...(opt.headers||{})}})}
 
 // ---------- dáta ----------
-let base=null,state={items:{},u:{},del:{}},etag=null,dirty={},listeners=[],saving=null,timer=null,loaded=false;
+let lastSnap=null,base=null,state={items:{},u:{},del:{}},etag=null,dirty={},listeners=[],saving=null,timer=null,loaded=false;
 const FILE=()=>`/me/drive/root:/${enc(base+'/'+DATA_DIR+'/'+DATA_FILE)}`;
 async function findBase(){
   if(CFG.basePath){base=CFG.basePath;return}
@@ -57,6 +57,8 @@ async function push(){
   if(r.status===412||r.status===409){merge(await pull());emit(false);return push()}
   if(!r.ok)throw new Error('write '+r.status);
   etag=(await r.json()).eTag;
+  try{const d=new Date().toISOString().slice(0,10);if(lastSnap!==d){lastSnap=d;
+    await g(`/me/drive/root:/${enc(base+'/'+DATA_DIR+'/zalohy/lnstatik_data_'+d+'.json')}:/content`,{method:'PUT',headers:{'Content-Type':'application/json'},body})}}catch(e){console.warn('snapshot',e)}
   for(const [id,ts] of Object.entries(sent))if(dirty[id]===ts)delete dirty[id]}
 function schedule(){clearTimeout(timer);setStatus('Ukladám…');timer=setTimeout(flush,800)}
 async function flush(){if(saving)return saving;
@@ -88,6 +90,10 @@ async function openAtt(id){const w=window.open('about:blank','_blank');
   try{const r=await g(`/me/drive/items/${encodeURIComponent(id)}?$select=@microsoft.graph.downloadUrl,webUrl,file`);const j=await r.json();
     const u=j['@microsoft.graph.downloadUrl']||j.webUrl;if(w)w.location=u;else location.href=u}catch(e){if(w)w.close();alert('Prílohu sa nepodarilo otvoriť.')}}
 document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="/_blob/"]');if(!a)return;e.preventDefault();e.stopPropagation();openAtt(decodeURIComponent(a.getAttribute('href').slice(7)))},true);
+
+// ---------- PDF faktúr do OneDrive ----------
+AUTH.savePdf=async(inv,blob)=>{if(!base)return;const y=String(inv.issueDate||'').slice(0,4)||'bez_roku';const n=String(inv.number||'faktura').replace(/[^\w-]/g,'');
+  try{await g(`/me/drive/root:/${enc(base+'/LNStatik_zaloha/Faktury_PDF/'+y+'/Faktura_'+n+'.pdf')}:/content`,{method:'PUT',headers:{'Content-Type':'application/pdf'},body:blob})}catch(e){console.warn('pdf',e)}};
 
 // ---------- Outlook koncept ----------
 AUTH.mailDraft=async({subject,html,to,pdfs,logo})=>{const t=await token(['Mail.ReadWrite']);
