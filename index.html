@@ -244,6 +244,12 @@ body.m-time aside{display:none}body.m-time .app{grid-template-columns:1fr}body.m
 .tbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}
 .lockbtn{background:none;border:1px solid var(--side2);color:var(--sideink);border-radius:6px;padding:7px 10px;font:inherit;font-size:13px;cursor:pointer;margin-top:8px}.lockbtn:hover{color:#fff}
 .fold summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center}.fold summary::-webkit-details-marker{display:none}.fold .chev{color:var(--ink3);font-size:20px;transition:transform .15s}.fold[open] .chev{transform:rotate(90deg)}
+.cg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.ch{font-size:12px;color:var(--ink3);text-align:center;padding:4px 0}
+.cd{min-height:92px;border:1px solid var(--line2);border-radius:6px;padding:4px;background:var(--surface);overflow:hidden}.cd.oth{opacity:.45}.cd.tod{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.dn{font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:2px}.ce{background:var(--ink);color:#fff;border-radius:4px;font-size:11.5px;padding:2px 5px;margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ce.cx{background:var(--line);color:var(--ink3);text-decoration:line-through}
+.cv{border-left:3px solid;font-size:11.5px;padding:1px 4px;margin-bottom:2px;background:var(--paper);border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.dot2{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:middle}
+@media(max-width:700px){.cd{min-height:64px;padding:2px}.ce,.cv{font-size:10px;padding:1px 3px}}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/favicon.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -416,6 +422,7 @@ window.claude={use:async k=>{await started;if(!AUTH.ok)return null;
       <button data-v="vydavky">Výdavky</button>
       <small>Kapela</small>
       <button data-v="kapela">Akcie</button>
+      <button data-v="kalendar">Kalendár</button>
       <div class="sep"></div>
       <button data-v="nastavenia">Nastavenia</button>
     </nav>
@@ -465,7 +472,7 @@ const DESC='Vypracovanie dokumentácie a projektu jednoduchých stavieb';
 const IMPORT={biz:{},clients:[],invoices:[]};
 
 // ===== state / storage =====
-const VIEWS=['prehlad','faktury','cas','odberatelia','vydavky','kapela','nastavenia'];
+const VIEWS=['prehlad','faktury','cas','odberatelia','vydavky','kapela','kalendar','nastavenia'];
 const S={items:{},view:VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'prehlad',year:new Date().getFullYear(),invF:'all',evF:'year',timeF:'month',mode:'start'};
 let col=null;const Q={};
 const DEF={kind:'settings',biz:{...IMPORT.biz},vatPayer:false,vatRate:23,rate:25,dueDays:14,prefix:'',desc:DESC,sign:'',logo:'',running:null,pin:''};
@@ -528,7 +535,7 @@ function render(){
   const r=settings().running;
   $('#mini').innerHTML=r?`<div class="mini" onclick="go('cas')"><div class="c" id="miniClock">${dur(Date.now()-r.start)}</div><div class="s">${esc(r.client||'')}${r.note?' – '+esc(r.note):''}</div></div>`:'';
   const off=S.offline?`<div class="note">Dáta sa nepodarilo načítať z OneDrive. Skontroluj pripojenie a obnov stránku.</div>`:'';
-  $('#main').innerHTML=off+({prehlad:vOverview,faktury:vInvoices,cas:vTime,odberatelia:vClients,vydavky:vExpenses,kapela:vBand,nastavenia:vSettings})[S.view]();
+  $('#main').innerHTML=off+({prehlad:vOverview,faktury:vInvoices,cas:vTime,odberatelia:vClients,vydavky:vExpenses,kapela:vBand,kalendar:vCal,nastavenia:vSettings})[S.view]();
   if(S.view==='prehlad')bindChart();
 }
 setInterval(()=>{const r=settings().running;if(!r)return;const t=dur(Date.now()-r.start);const a=$('#miniClock');if(a)a.textContent=t;const b=$('#clock');if(b)b.textContent=t},1000);
@@ -1004,6 +1011,34 @@ function editClient(id){const c=id?{...S.items[id]}:{name:'',street:'',city:'',c
   $('#cf').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target);const o={...(id?S.items[id]:{}),kind:'client'};['name','street','city','country','ico','dic','icdph','email','vatNote','autoDesc'].forEach(k=>o[k]=(f.get(k)||'').trim());
     const was=!!o.autoInv;o.autoInv=!!f.get('autoInv');o.autoRate=f.get('autoRate')||'';if(o.autoInv&&!was)o.autoFrom=today().slice(0,7);save(id||('cl_'+uid()),o);closeModal();toast('Odberateľ je uložený')}}
 
+// ===== DOVOLENKY + KALENDÁR =====
+const DCOL=['#2F6FB0','#B7791F','#2E7D4F','#8E44AD','#C0392B','#16808A','#6D4C41'];
+const memColor=n=>{const i=bandCfg().members.indexOf(n);return DCOL[(i<0?bandCfg().members.length+n.length:i)%DCOL.length]};
+let dovAt=0;
+async function dovApi(body){const st=settings();if(!st.dovUrl)return null;
+  const r=body?await fetch(st.dovUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...body,k:st.dovKey||''})}):await fetch(st.dovUrl+(st.dovUrl.includes('?')?'&':'?')+'k='+encodeURIComponent(st.dovKey||''),{cache:'no-store'});
+  const j=await r.json();if(j.chyba)throw new Error(j.chyba==='kľúč'?'nesprávny kľúč':j.chyba);S.dov=j.dovolenky||[];dovAt=Date.now();return S.dov}
+async function loadDov(force){if(!settings().dovUrl)return [];if(!force&&S.dov&&Date.now()-dovAt<300000)return S.dov;try{await dovApi();if(['kalendar'].includes(S.view)&&S.mode==='full')render()}catch(e){console.warn(e)}return S.dov||[]}
+const dovOn=d=>(S.dov||[]).filter(x=>d&&x.od<=d&&d<=x.do);
+function vCal(){const st=settings();if(!S.calM){const n=new Date();S.calM=new Date(n.getFullYear(),n.getMonth(),1)}const M=S.calM;if(!S.dov&&st.dovUrl)loadDov();
+  const MN=['január','február','marec','apríl','máj','jún','júl','august','september','október','november','december'];
+  const first=new Date(M);first.setDate(1-((M.getDay()+6)%7));const t=today();const evs=list('event');
+  const cells=[];for(let i=0;i<42;i++){const d=new Date(first);d.setDate(first.getDate()+i);const ds=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const de=evs.filter(e=>e.date===ds);const dv=dovOn(ds);const other=d.getMonth()!==M.getMonth();
+    cells.push(`<div class="cd${other?' oth':''}${ds===t?' tod':''}"><div class="dn">${d.getDate()}</div>${de.map(e=>{const cl=e.status==='cancel';const clash=dovOn(e.date).length;return `<div class="ce${cl?' cx':''}" onclick="editEvent('${e.id}')" title="${esc(e.title||e.type)}">${clash&&!cl?'⚠ ':''}${esc(e.time?e.time+' ':'')}${esc(e.title||e.type)}</div>`}).join('')}${dv.map(x=>`<div class="cv" style="border-color:${memColor(x.kto)};color:${memColor(x.kto)}" title="${esc(x.pozn||x.kto)}">${esc(x.kto)}</div>`).join('')}</div>`)}
+  const up=(S.dov||[]).filter(x=>x.do>=t);const clashes=evs.filter(e=>e.date>=t&&e.status!=='cancel'&&dovOn(e.date).length);
+  return `<div class="head"><div><h1>Kalendár</h1><p class="lead">Akcie kapely a dovolenky členov na jednom mieste.</p></div><div style="display:flex;gap:10px;align-items:center"><span class="yr"><button aria-label="Predošlý mesiac" onclick="S.calM=new Date(S.calM.getFullYear(),S.calM.getMonth()-1,1);render()">‹</button><span style="min-width:150px;text-align:center;text-transform:capitalize">${MN[M.getMonth()]} ${M.getFullYear()}</span><button aria-label="Ďalší mesiac" onclick="S.calM=new Date(S.calM.getFullYear(),S.calM.getMonth()+1,1);render()">›</button></span><button class="btn" onclick="S.calM=null;render()">Dnes</button></div></div>
+  ${clashes.length?`<div class="note">Pozor – na tieto akcie má niekto dovolenku: ${clashes.map(e=>`<b>${esc(e.title||e.type)}</b> (${fd(e.date)}: ${esc(dovOn(e.date).map(x=>x.kto).join(', '))})`).join('; ')}</div>`:''}
+  <div class="panel cal" style="margin-bottom:22px;padding:12px"><div class="cg">${['Po','Ut','St','Št','Pi','So','Ne'].map(x=>`<div class="ch">${x}</div>`).join('')}${cells.join('')}</div></div>
+  <div class="cols">
+   <div class="panel"><h3>Dovolenky</h3>${!st.dovUrl?'<p class="dim">Dovolenky ešte nie sú prepojené s Google kalendárom kapely. Adresu a kľúč nastavíš v Nastaveniach → Kapela.</p>':up.length?`<table><tbody>${up.map(x=>`<tr><td><span class="dot2" style="background:${memColor(x.kto)}"></span><b>${esc(x.kto)}</b></td><td>${fd(x.od)}${x.do!==x.od?' – '+fd(x.do):''}</td><td class="r"><button class="btn q sm" onclick="if(sure(this,'Zmazať?'))delDov('${esc(x.id)}')">Zmazať</button></td></tr>`).join('')}</tbody></table>`:'<p class="dim">Žiadne naplánované dovolenky.</p>'}</div>
+   <div class="panel"><h3>Pridať dovolenku</h3>${st.dovUrl?`<form id="dovf" onsubmit="event.preventDefault();addDov(this)"><div class="f"><label>Kto</label><select name="kto">${bandCfg().members.map(n=>`<option ${n===bandCfg().me?'selected':''}>${esc(n)}</option>`).join('')}</select></div>
+     <div class="fr"><div class="f"><label>Od</label><input type="date" name="od" required value="${t}"></div><div class="f"><label>Do</label><input type="date" name="do" required value="${t}"></div></div><button class="btn p">Pridať</button></form>`:'<p class="dim">Najprv prepoj dovolenky v Nastaveniach.</p>'}</div>
+  </div>`}
+async function addDov(f){const d=new FormData(f);const od=d.get('od'),dd=d.get('do');if(dd<od){toast('Koniec musí byť po začiatku');return}const b=f.querySelector('button');b.disabled=true;b.textContent='Ukladám…';
+  try{await dovApi({akcia:'pridat',kto:d.get('kto'),od,do:dd});toast('Dovolenka je pridaná');render()}catch(e){toast('Nepodarilo sa: '+e.message);b.disabled=false;b.textContent='Pridať'}}
+async function delDov(id){try{await dovApi({akcia:'zmazat',id});toast('Zmazané');render()}catch(e){toast('Nepodarilo sa: '+e.message)}}
+
 // ===== SB KALENDÁR (GitHub Pages) =====
 const GH_REPO='LN-Statik/lnstatik',GH_PATH='kalendar/index.html';
 let bandT=null,calT=null;function bandSoon(){if(window.AUTH&&AUTH.ok&&AUTH.calSync&&settings().calOn!==false){clearTimeout(calT);calT=setTimeout(()=>syncCal(false),45000)}if(!(settings().ghToken))return;clearTimeout(bandT);bandT=setTimeout(()=>publishBand(false),60000)}
@@ -1030,7 +1065,7 @@ async function publishBand(manual){const st=settings();const tok=st.ghToken;cons
   try{msg('Aktualizujem SB Kalendár…');
     const F=['date','time','title','type','venue','city','fee','fuel','members','status','notes','contact','contactEmail','deposit','depositBy','depositPaid','split'];
     const evs=list('event').map(e=>{const o={id:e.id,files:[]};F.forEach(k=>o[k]=e[k]??'');return o}).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
-    const now=new Date();const payload=JSON.stringify({members:bandCfg().members,events:evs,updated:now.toLocaleDateString('sk-SK')+' '+now.toLocaleTimeString('sk-SK',{hour:'2-digit',minute:'2-digit'})});
+    const now=new Date();const payload=JSON.stringify({members:bandCfg().members,dov:st.dovUrl?{url:st.dovUrl,k:st.dovKey||''}:null,events:evs,updated:now.toLocaleDateString('sk-SK')+' '+now.toLocaleTimeString('sk-SK',{hour:'2-digit',minute:'2-digit'})});
     const r0=await fetch('https://app.lnstatik.sk/kalendar/sablona.html',{cache:'no-store'}).catch(()=>null);const tpl=r0&&r0.ok?await r0.text():await (await fetch(`https://raw.githubusercontent.com/${GH_REPO}/main/kalendar/sablona.html`,{cache:'no-store'})).text();
     if(!tpl.includes('/*__BLOB__*/null'))throw new Error('šablóna');
     const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),N=250000;
@@ -1184,6 +1219,7 @@ function editEvent(id){const e=id?{...S.items[id]}:{date:today(),time:'',type:'S
   modal(`<h2>${id?'Upraviť akciu':'Nová akcia'}</h2><form id="evf">
   <div class="fr"><div class="f"><label>Názov</label><input name="title" value="${esc(e.title)}" placeholder="napr. Svadba Kováčovci"></div><div class="f"><label>Typ</label><select name="type">${ETYPES.map(x=>`<option ${x===e.type?'selected':''}>${x}</option>`).join('')}</select></div></div>
   <div class="fr"><div class="f"><label>Dátum</label><input type="date" name="date" value="${esc(e.date)}" required></div><div class="f"><label>Čas</label><input type="time" name="time" value="${esc(e.time)}"></div><div class="f"><label>Stav</label><select name="status">${Object.entries(EST).map(([k,v])=>`<option value="${k}" ${k===e.status?'selected':''}>${v[0]}</option>`).join('')}</select></div></div>
+  <div id="dovWarn" class="note" style="display:none;margin-bottom:12px"></div>
   <div class="fr"><div class="f"><label>Miesto</label><input name="venue" value="${esc(e.venue)}"></div><div class="f"><label>Obec / mesto</label><input name="city" value="${esc(e.city)}"></div></div>
   <div class="panel" style="padding:14px 16px;margin-bottom:12px;background:var(--paper)">
    <div class="fr"><div class="f"><label>Cena za akciu (€)</label><input type="number" step="0.01" name="fee" value="${esc(e.fee)}"></div><div class="f"><label>Nafta navyše (€)</label><input type="number" step="0.01" name="fuel" value="${esc(e.fuel??'')}" placeholder="0"></div></div>
@@ -1205,6 +1241,7 @@ function editEvent(id){const e=id?{...S.items[id]}:{date:today(),time:'',type:'S
     if(fee&&Math.abs(sb-fee)>0.01)warn.push(`podiely spolu ${eur(sb)} ≠ cena ${eur(fee)}`);if(Math.abs(sf-fuel)>0.01)warn.push(`nafta rozdelená ${eur(sf)} z ${eur(fuel)}`);
     $('#split').innerHTML=fee?`Od klienta spolu <b style="color:var(--ink)">${eur(fee+fuel)}</b>${warn.length?` · <span style="color:var(--warn)">${warn.join(' · ')}</span>`:' · všetko rozdelené'}`:'Zadaj cenu za akciu a podiely sa vypočítajú samé.'};
   ef.addEventListener('input',upd);upd();
+  const dw=()=>{const w=dovOn(ef.date.value);const el=$('#dovWarn');if(!el)return;el.style.display=w.length?'':'none';el.innerHTML=w.length?'Pozor, v tento deň má dovolenku: <b>'+esc(w.map(x=>x.kto).join(', '))+'</b>':''};ef.date.addEventListener('change',dw);dw();loadDov().then(dw);
   ef.clientPaid.onchange=()=>{if(ef.clientPaid.checked)ef.status.value='paid';else if(ef.status.value==='paid')ef.status.value=ef.date.value<today()?'done':'ok'};ef.status.onchange=()=>{ef.clientPaid.checked=ef.status.value==='paid'};
   $('#fuelEven').onclick=()=>{const fuel=+ef.fuel.value||0,ms=bandCfg().members;ms.forEach(n=>ef.querySelector(`[data-sf="${n}"]`).value=fuel?(Math.round(fuel/ms.length*100)/100):'');upd()};
   $('#splitReset').onclick=()=>{bandCfg().members.forEach(n=>ef.querySelector(`[data-sb="${n}"]`).value='');upd()};
@@ -1266,6 +1303,9 @@ function vSettings(){const st=settings(),b=st.biz;
      <div class="f"><label>GitHub kľúč ${st.ghToken?'<span class="tag ok">nastavený</span>':''}</label><input name="ghToken" type="password" placeholder="${st.ghToken?'ponechať':'github_pat_…'}" autocomplete="off"></div>
      <button type="button" class="btn sm" onclick="publishBand(true)">Aktualizovať SB Kalendár teraz</button>
     </div>
+    <div style="border-top:1px solid var(--line2);margin-top:12px;padding-top:12px"><b>Dovolenky</b> <span class="dim" style="font-size:13px">– Google kalendár „SB Dovolenky“</span>
+     <div class="fr" style="margin-top:8px"><div class="f"><label>Adresa skriptu (…/exec)</label><input name="dovUrl" value="${esc(st.dovUrl||'')}" placeholder="https://script.google.com/macros/s/…/exec"></div><div class="f"><label>Kľúč</label><input name="dovKey" type="password" value="${esc(st.dovKey||'')}" autocomplete="off"></div></div>
+    </div>
     <div style="border-top:1px solid var(--line2);margin-top:12px;padding-top:12px"><b>Kalendár v Outlooku</b> <span class="dim" style="font-size:13px">– „SB Kapela“</span>
      <div class="dim" style="font-size:13px;margin:4px 0 10px">Všetky akcie sa samé zapisujú do samostatného kalendára „SB Kapela“ v tvojom Outlooku (záloha, pripomienka deň vopred). Tento kalendár môžeš zdieľať s kapelou.</div>
      <button type="button" class="btn sm" onclick="syncCal(true)">Synchronizovať kalendár teraz</button> <span class="dim" id="calSt" style="font-size:13px">${st.calAt?'Naposledy '+new Date(st.calAt).toLocaleString('sk-SK'):''}</span> <span class="dim" id="bandSt" style="font-size:13px">${st.bandAt?'Naposledy '+new Date(st.bandAt).toLocaleString('sk-SK'):''}</span></div>
@@ -1288,7 +1328,7 @@ function vSettings(){const st=settings(),b=st.biz;
   </div><div style="margin-top:18px"><button class="btn p">Uložiť nastavenia</button></div></form>`}
 document.addEventListener('submit',e=>{if(e.target.id!=='sf')return;e.preventDefault();const f=new FormData(e.target);const st=settings();const biz={};
   ['name','street','city','country','ico','dic','icdph','iban','swift','contact','phone','email','reg'].forEach(k=>biz[k]=(f.get(k)||'').trim());
-  save('settings',{...st,biz,bandUser:(f.get('bandUser')||'simple').trim(),bandPw:f.get('bandPw')||'0000SB',ghToken:(f.get('ghToken')||'').trim()||st.ghToken||'',bandMembers:(f.get('bandMembers')||'').split(',').map(x=>x.trim()).filter(Boolean),bandMe:(f.get('bandMe')||'Laci').trim(),mailSubj:f.get('mailSubj')||DEF_SUBJ,mailBody:f.get('mailBody')||DEF_BODY,desc:f.get('desc')||DESC,dueDays:+f.get('dueDays')||14,prefix:(f.get('prefix')||'').trim(),rate:+f.get('rate')||0,vatPayer:!!f.get('vatPayer'),vatRate:+f.get('vatRate')||0});toast('Nastavenia sú uložené')});
+  save('settings',{...st,biz,dovUrl:(f.get('dovUrl')||'').trim(),dovKey:(f.get('dovKey')||'').trim(),bandUser:(f.get('bandUser')||'simple').trim(),bandPw:f.get('bandPw')||'0000SB',ghToken:(f.get('ghToken')||'').trim()||st.ghToken||'',bandMembers:(f.get('bandMembers')||'').split(',').map(x=>x.trim()).filter(Boolean),bandMe:(f.get('bandMe')||'Laci').trim(),mailSubj:f.get('mailSubj')||DEF_SUBJ,mailBody:f.get('mailBody')||DEF_BODY,desc:f.get('desc')||DESC,dueDays:+f.get('dueDays')||14,prefix:(f.get('prefix')||'').trim(),rate:+f.get('rate')||0,vatPayer:!!f.get('vatPayer'),vatRate:+f.get('vatRate')||0});toast('Nastavenia sú uložené')});
 function setImg(k,v){save('settings',{...settings(),[k]:v})}
 async function exportBackup(btn){const data={app:'LNStatik',verzia:1,vytvorene:new Date().toISOString(),items:S.items};
   try{const dl=await claude.use('downloads');if(!dl){toast('Sťahovanie tu nie je dostupné.');return}

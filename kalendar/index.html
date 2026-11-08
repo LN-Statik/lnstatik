@@ -51,6 +51,8 @@ h2{font-size:17px;margin:26px 0 10px}
 .m{color:var(--ink2);font-size:14px}
 .money{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px;font-size:14px}
 .money b{font-weight:600}
+.dovw{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 14px 14px}.dovw table{border:0}.dot2{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:middle}
+.dovf{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}.dovf select,.dovf input,.dovf .btn{width:auto!important;margin:0!important;flex:0 0 auto}.dovf select,.dovf input{padding:7px 9px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:14px}.lnk{background:none;border:0;color:var(--muted);cursor:pointer;font:inherit;font-size:13px}
 table.split{margin-top:10px;font-size:13px;border-radius:8px;max-width:520px}table.split th,table.split td{padding:5px 10px}.pk{color:#2F7A4F;font-weight:700}.dimx{color:#B0B5BB}
 .note{margin-top:8px;background:var(--paper);border-radius:8px;padding:8px 10px;font-size:14px;white-space:pre-wrap}
 .tag{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;color:var(--ink2);margin-left:6px}
@@ -72,7 +74,7 @@ th{color:var(--muted);font-weight:500}
 <body>
 <div id="app"></div>
 <script>
-const BLOB={"s": "bdyz89W1nmeF/Cv6f8vz8A==", "i": "Cjq3IjkGaNZLDh9n", "c": "tCQa1V9bJDk7NGxIrV5RpI36CE6A42+IZApY57kCEenuL5Wz3PaM4PyYHdUM72Z3MROx0eBA8pTV3t7uMsKP+9Q47vpDhj3Woi0ecTCIeS8m+LFlB12FZ474LWEIVgAUqbyxd9QJ/PyyYgp2OSAT4kr6N6I58MynJGRoN6L0omHyUmpPlSp4o5u7OR2AHMIY2JcVsGaoxSDHW5mR/034N9/GqAmnu0V4KjgRCDP+b+t7XHNlPh+NRWq1+6BILxq7gKXBxtMzTiPDJup0bZXU0atYTTKoW3ZtPXFS6L8LcxDpERWU8l1iPErtO+4Lg6DgxVGAkph/hxaD+nG46kg73Pwq6FiJfDbnfelSIpAlDLqQeG8jEq5qxjcPZWydfX9o6wxjwxFfjeTUjZCKYi5QNkMMelvyYuoogX8WacRBgvNi17MMyIDQWq0tGRMTlEuZoAeTH8QwTke2yUNWaoG9pFpYykAw5FO7dQERqeVbqspgKVzWoVH1Ahb1tfrx+DOLuvP0L+x09/fcWmFPFp/9YgUEHAPKM2ghbb/pIJf0cDEPu3/W+1Q7WfH4j4vXCZ0mVZsLfaIPwfgcdRm3ELV5r+5f8gbM/wHQ+AhVHpgzv+qbT6alcznreFCh/8kSplTH1QBlKktVHfZ0UxfcSGAECfY0SMK75U/FHb09i6baHw74bWwUKJHmvIifGigvM0tN/LRXpUDbLCCVHg9htpULagYvtk2VuFKqv13W6tlwlQXx/rKCSLyCUXrTBr7I8ZTx3UQfvVibtlX5WZGhvQe7ndKDpcWSmCweXyzc1LymWkisOCjdZOzbNNn9cKDR92H5+yJhKpwJ75INlSUPKN+ULF8ylSzYVbIvpHwdOUexJdirFpnRSz6YVYShlkUecVDFrSwKE1KpIZ16C0eWMAEvNmexN0N8znldjimYtRzrStv5oG/sPRqPGnN9atMznnOhvrA3Mr977f6IsEuBg/1xxtuzG6cKNiTCPfZiJkQg00XAsFATj/e+qhfsF7oq/8OblwDVts9FsRiQyI2EyVqrz23Dpf0LBQ5E7XKACsZmyMhZ8ndyJek7BSPWMmccIeTB0EBo3K2AJjeH4idCZOHjpWV9fadHrv2c4a3g3k8rtA/g1fVlXtCy2RqHMS4=", "n": 250000};
+const BLOB={"s": "o0Ox+lVed8NWf25LJsm2Wg==", "i": "Qd9KcIEw8uaYJleI", "c": "yfbN0q/+Y3X38pyjSg9HnKfstQSnSilyWzHXmRRYcwVjM42sa9cxBzPI2ReqUyxHKX6J1tyP0PVyrvA1Wo3Y54JXpaqslX6dvlF3MMFQJjZowLtcIjZ2zyaDiUpkfAC60mG0i3+4lXPI15uwGOnZOIa5tLJb1yMgszIbFobmWdsjBIDKG4BUksIbu1KdTj++yxkcDQYmtIEr+DOFz40M216JKtNtSQqvUufEM6kBI4Bl0SU7CG+fvq17ea7Y2+mfYJduRBeezjaiFCFq9dGSA7eJKbvXlDoCs/w/KmegPqLBc0OYMwKvNk7V+5XTldcrAetu4pAqmM+S6pdDrY8QyusuqC6C/Px01GyfehGT+dr8AlLa6x6xYwdxe6D6pBNgwFOyEwMOEtRlkYhnGVfAT7YZvTgPE3rDqlVldbsOU1nqh4uvR9OkwlQ3aFUqSH9TTQVdVAMzJ5RfKlYQZZ5e7YOdLdmz+UP8cgxEl32pEAIKuCCnbaQ0QMjDlNR6/Ce7p6qzUbd4IgvUC4jWEWwWO/dxfFtFFMreG904C1ztpXlg3BnHGalCh3fIESz0C1mzKww0g/EemHFjEDyXYm6Irfayfxn0wIyZDJ5gewMOYj/EvaqcHxgU37s0F1BjgV9+Q2qpcrfLxk9OlcCtTCFy8Zkl41yWXaaLP6YvbAesv8Kl5Yw3Wn8c+y/rv+Mz76hGFjn1eKgzfvCWoQ2GtshYMSaZVsU+oRWC5BxNXiwfBBT6xYgylcNOFQVh58AV3V0ejIts7Cvt5Gu98ARnxwAyFPKdCmHZCpr3Kn2HPL82AgJ3PXV5xpnNCNWL5zIGChAztSnY+a+vQbJVNKblLLXmoaEGMUnAPxzEkpVdTexOvAClS8gcEugNtbngPPaFIcmTe9CXzDTw/uwoXeXdtZrmddtt7jziXYh96dFf9UZcQxDweQ/bSNNYNi7DAjQr8o5ajcr0Z1qPshGUAAbeiee1hXEt/pjHSjYy15lwAJ0BxSKePZEv15KecVbknS+fl1PO9DwasMWlc7qvJmNqrprwuasXT45IjgwJDUILiRT1/nKthZVMCL++cN7G1Sop8O2dqO4l1AM9ov8fxwXYtiV8L8vWpcgAvlQpKaGh56jIjY9LIby7hIJQ4dUst395J8kvI7/n5XCAT76L", "n": 250000};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const eur=n=>(Number(n)||0).toLocaleString('sk-SK',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
@@ -106,10 +108,18 @@ function loginView(msg){
     catch(x){b.disabled=false;b.textContent='Prihlásiť sa';$('#err').textContent='Nesprávne meno alebo heslo.'}};
 }
 function dateBox(s){const d=new Date(s+'T12:00');return `<div class="d"><b>${d.getDate()}</b><span>${MON[d.getMonth()]} ${String(d.getFullYear()).slice(2)}</span></div>`}
+let DOV=null;const DC=['#2F6FB0','#B7791F','#2E7D4F','#8E44AD','#C0392B','#16808A'];
+const mc=n=>DC[Math.max(0,(DATA.members||[]).indexOf(n))%DC.length];
+const dovOn=d=>(DOV||[]).filter(x=>x.od<=d&&d<=x.do);
+async function dovApi(body){const D=DATA.dov;if(!D)return;const r=body?await fetch(D.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...body,k:D.k})}):await fetch(D.url+'?k='+encodeURIComponent(D.k),{cache:'no-store'});
+  const j=await r.json();if(j.chyba)throw new Error(j.chyba);DOV=j.dovolenky||[];render()}
+function dovBox(){if(!DATA.dov)return '';const t=today();const up=(DOV||[]).filter(x=>x.do>=t);const fd=s=>{const d=new Date(s+'T12:00');return d.getDate()+'. '+(d.getMonth()+1)+'.'};
+  return `<h2>Dovolenky</h2><div class="dovw">${DOV===null?'<div class="empty">Načítavam…</div>':up.length?`<table><tbody>${up.map(x=>`<tr><td><span class="dot2" style="background:${mc(x.kto)}"></span><b>${esc(x.kto)}</b></td><td>${fd(x.od)}${x.do!==x.od?' – '+fd(x.do):''}</td><td class="r"><button class="lnk" data-del="${esc(x.id)}">Zmazať</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">Žiadne naplánované dovolenky.</div>'}
+   <form id="dovf" class="dovf"><select name="kto">${(DATA.members||[]).map(n=>`<option>${esc(n)}</option>`).join('')}</select><input type="date" name="od" required value="${t}"><input type="date" name="do" required value="${t}"><button class="btn sm">Pridať dovolenku</button></form></div>`}
 function evCard(e){const s=EST[e.status]||EST.lead;const f=+e.fee||0,n=+e.fuel||0;const past=e.date<today();
   return `<details class="ev${past?' past':''}"><summary>${dateBox(e.date)}<div class="sm">
     <div class="t">${esc(e.title||e.type)}<span class="tag ${s[1]}">${s[0]}</span></div>
-    <div class="m">${esc([e.type,e.time,e.venue,e.city].filter(Boolean).join(' · '))}</div></div><span class="chev" aria-hidden="true">›</span></summary>
+    <div class="m">${esc([e.type,e.time,e.venue,e.city].filter(Boolean).join(' · '))}</div>${e.status!=='cancel'&&dovOn(e.date).length?`<div class="m" style="color:#A86500">⚠ dovolenka: ${esc(dovOn(e.date).map(x=>x.kto).join(', '))}</div>`:''}</div><span class="chev" aria-hidden="true">›</span></summary>
    <div class="body">
    ${f||n?`<div class="money"><span>Dohodnuté <b>${eur(f)}</b></span>${n?`<span>Nafta <b>${eur(n)}</b></span><span>Spolu za akciu <b>${eur(f+n)}</b></span>`:''}</div>`:''}
    ${+e.deposit?`<div class="money"><span>Záloha <b>${eur(e.deposit)}</b>${e.depositBy?` (u ${esc({Laci:'Laciho',Tomi:'Tomiho'}[e.depositBy]||e.depositBy)})`:''}<span class="tag ${e.depositPaid?'ok':'warn'}">${e.depositPaid?'prijatá':'čaká sa'}</span></span>${f?`<span>Doplatok <b>${eur(f+n-(+e.deposit||0))}</b></span>`:''}</div>`:''}
@@ -134,11 +144,15 @@ function render(){
       return `<div class="fig dark next"><div class="k">Nasledujúca akcia</div><div class="v">${esc(n.title||n.type)}${n.city&&!(n.title||'').includes(n.city)?' · '+esc(n.city):''}</div><div class="k" style="color:#fff;font-size:14px">${d.toLocaleDateString('sk-SK',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}${n.time?', '+esc(n.time):''}</div></div>`})()}
    </div>
    ${up[0]?`<h2>Nasledujúca akcia</h2>${evCard(up[0])}`:''}
+   ${dovBox()}
    <h2>Akcie v roku ${y}</h2>
    ${(()=>{const l=allY.filter(e=>!up[0]||e.id!==up[0].id);return l.length?l.map(evCard).join(''):'<div class="empty">V tomto roku žiadne ďalšie akcie.</div>'})()}
    <h2>Prehľad po mesiacoch, ${y}</h2>
    ${gigs.length?`<table><thead><tr><th>Mesiac</th><th class="r">Akcií</th><th class="r">Spolu</th></tr></thead><tbody>${byM.map((v,i)=>v.n?`<tr><td>${MONF[i]}</td><td class="r">${v.n}</td><td class="r">${eur(v.s)}</td></tr>`:'').join('')}<tr><td><b>Spolu</b></td><td class="r"><b>${gigs.length}</b></td><td class="r"><b>${eur(sum(gigs)+fuel(gigs))}</b></td></tr></tbody></table>`:'<div class="empty">V tomto roku zatiaľ žiadne akcie.</div>'}
   </main>`;
+  const df=$('#dovf');if(df)df.onsubmit=async ev=>{ev.preventDefault();const f=new FormData(df);if(f.get('do')<f.get('od')){alert('Koniec musí byť po začiatku');return}const b=df.querySelector('button');b.disabled=true;b.textContent='Ukladám…';try{await dovApi({akcia:'pridat',kto:f.get('kto'),od:f.get('od'),do:f.get('do')})}catch(x){alert('Nepodarilo sa uložiť');b.disabled=false;b.textContent='Pridať dovolenku'}};
+  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{if(!confirm('Zmazať túto dovolenku?'))return;try{await dovApi({akcia:'zmazat',id:b.dataset.del})}catch(x){alert('Nepodarilo sa zmazať')}});
+  if(DATA.dov&&DOV===null){DOV=[];dovApi().catch(()=>{})}
   $('#yp').onclick=()=>{YEAR--;render()};$('#yn').onclick=()=>{YEAR++;render()};
   $('#lo').onclick=()=>{DATA=null;try{sessionStorage.removeItem('kap')}catch(x){}loginView()};
 }

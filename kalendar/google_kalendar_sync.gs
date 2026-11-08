@@ -9,10 +9,17 @@
  *  1. Do ICS_URL vlož odkaz ICS zo zverejneného Outlook kalendára "SB Kapela".
  *  2. Hore vyber funkciu "nastavit" a klikni Spustiť (povoľ prístup ku kalendáru).
  *  Hotovo – odteraz sa to synchronizuje samo.
+ *
+ * Dovolenky (kalendár "SB Dovolenky"):
+ *  3. Do KLUC vlož tajný kľúč (ten istý zadáš v appke LNStatik).
+ *  4. Nasadiť → Nové nasadenie → typ "Webová aplikácia" → Spustiť ako: Ja,
+ *     Prístup: Ktokoľvek → Nasadiť. Skopírovanú adresu (…/exec) vlož do appky.
  */
 const ICS_URL = 'SEM_VLOZ_ICS_ODKAZ';
 const NAZOV_KALENDARA = 'SB Kapela';
 const ZONA = 'Europe/Bratislava';
+const KLUC = 'SEM_VLOZ_KLUC';
+const DOVOLENKY = 'SB Dovolenky';
 
 function nastavit() {
   ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
@@ -90,4 +97,40 @@ function datum_(v, allDay) {
   const s = Utilities.formatString('%04d-%02d-%02dT%02d:%02d:%02d', y, m + 1, d, hh, mi, ss);
   const off = Utilities.formatDate(new Date(Date.UTC(y, m, d, 12)), ZONA, 'XXX');
   return new Date(s + off);
+}
+
+// ---------- Dovolenky ----------
+function dovKalendar_() {
+  const c = CalendarApp.getCalendarsByName(DOVOLENKY);
+  return c.length ? c[0] : CalendarApp.createCalendar(DOVOLENKY, { timeZone: ZONA, color: CalendarApp.Color.GREEN });
+}
+function json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+function den_(d) { return Utilities.formatDate(d, ZONA, 'yyyy-MM-dd'); }
+function zoDna_(s) { const p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+function zoznam_() {
+  const od = new Date(); od.setDate(od.getDate() - 60);
+  const po = new Date(); po.setDate(po.getDate() + 550);
+  return dovKalendar_().getEvents(od, po).map(e => {
+    const t = e.getTitle(); const kto = t.split(/\s[–-]\s/)[0].trim();
+    const s = e.getAllDayStartDate ? (e.isAllDayEvent() ? e.getAllDayStartDate() : e.getStartTime()) : e.getStartTime();
+    let k = e.isAllDayEvent() ? e.getAllDayEndDate() : e.getEndTime();
+    if (e.isAllDayEvent()) k = new Date(k.getTime() - 864e5);
+    return { id: e.getId(), kto: kto, od: den_(s), do: den_(k), pozn: t };
+  }).sort((a, b) => a.od < b.od ? -1 : 1);
+}
+function doGet(e) {
+  if (!e || !e.parameter || e.parameter.k !== KLUC) return json_({ chyba: 'kľúč' });
+  return json_({ ok: true, dovolenky: zoznam_() });
+}
+function doPost(e) {
+  let d = {}; try { d = JSON.parse(e.postData.contents); } catch (x) {}
+  if (d.k !== KLUC) return json_({ chyba: 'kľúč' });
+  const cal = dovKalendar_();
+  if (d.akcia === 'pridat' && d.kto && d.od && d.do) {
+    const k = zoDna_(d.do); k.setDate(k.getDate() + 1);
+    cal.createAllDayEvent(String(d.kto).slice(0, 40) + ' – dovolenka', zoDna_(d.od), k);
+  } else if (d.akcia === 'zmazat' && d.id) {
+    const ev = cal.getEventById(d.id); if (ev) ev.deleteEvent();
+  }
+  return json_({ ok: true, dovolenky: zoznam_() });
 }
