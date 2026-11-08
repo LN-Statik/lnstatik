@@ -484,9 +484,9 @@ function drawGate(){const now=new Date();const run=settings().running;const g=$(
   if(window.AUTH&&!AUTH.ok){g.innerHTML=AUTH.ready?AUTH.loginHTML():'<div class="gate"><p class="dim">Načítavam…</p></div>';return}const ask=S.gatePin;
   g.innerHTML=`<div class="gate"><div class="lg">${sig(15,'#8B929B','#1F2328')}</div>
    <div class="day">${now.toLocaleTimeString('sk-SK',{hour:'2-digit',minute:'2-digit'})}</div><div class="dt">${now.toLocaleDateString('sk-SK',{weekday:'long',day:'numeric',month:'long'})}</div>
-   <button class="gb" onclick="S.gatePin=false;S.mode='time';render()"><span>Odpracované hodiny${run?'<span class="dot" title="Stopky bežia"></span>':''}<small>Stopky a zápis času</small></span><span class="ar">›</span></button>
+   <button class="gb" onclick="S.gatePin=false;S.mode='time';render()"><span>Pracovňa${run?'<span class="dot" title="Stopky bežia"></span>':''}</span><span class="ar">›</span></button>
    ${ask?`<form class="pin" onsubmit="event.preventDefault();tryPin()"><input id="pinIn" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN" aria-label="PIN"><button class="btn p">Vstúpiť</button></form>`
-   :`<button class="gb" onclick="enterFull()"><span>Vstúpiť<small>Celá aplikácia</small></span><span class="ar">›</span></button>`}
+   :`<button class="gb" onclick="enterFull()"><span>Admin</span><span class="ar">›</span></button>`}
    ${window.AUTH&&AUTH.ok?'<p style="margin-top:26px"><button class="btn q sm" onclick="AUTH.logout()">Odhlásiť sa</button></p>':''}
   </div>`;if(ask)setTimeout(()=>{const i=$('#pinIn');if(i)i.focus()},30)}
 setInterval(()=>{if(S.mode==='start'&&!S.gatePin)drawGate()},30000);
