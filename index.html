@@ -349,6 +349,19 @@ async function openAtt(id){const w=window.open('about:blank','_blank');
     const u=j['@microsoft.graph.downloadUrl']||j.webUrl;if(w)w.location=u;else location.href=u}catch(e){if(w)w.close();alert('Prílohu sa nepodarilo otvoriť.')}}
 document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="/_blob/"]');if(!a)return;e.preventDefault();e.stopPropagation();openAtt(decodeURIComponent(a.getAttribute('href').slice(7)))},true);
 
+// ---------- kalendár v Outlooku (záloha akcií kapely) ----------
+AUTH.calSync=async(evs,map,calName)=>{const t=await token(['Calendars.ReadWrite']);const H={Authorization:'Bearer '+t,'Content-Type':'application/json'};
+  const q=async(path,o={})=>{const r=await fetch(GRAPH+path,{...o,headers:{...H,...(o.headers||{})}});if(!r.ok&&r.status!==404){let m='';try{m=(await r.json()).error.message}catch(e){}throw new Error(m||('Outlook '+r.status))}return r};
+  let cal=(await (await q(`/me/calendars?$select=id,name&$top=100`)).json()).value.find(c=>c.name===calName);
+  if(!cal)cal=await (await q('/me/calendars',{method:'POST',body:JSON.stringify({name:calName})})).json();
+  const out={};
+  for(const e of evs){const body=JSON.stringify(e.ev);let id=map[e.id];
+    if(id){const r=await q(`/me/calendars/${cal.id}/events/${encodeURIComponent(id)}`,{method:'PATCH',body});if(r.status===404)id=null}
+    if(!id){const r=await q(`/me/calendars/${cal.id}/events`,{method:'POST',body});id=(await r.json()).id}
+    out[e.id]=id}
+  for(const [k,id] of Object.entries(map))if(!out[k])await q(`/me/calendars/${cal.id}/events/${encodeURIComponent(id)}`,{method:'DELETE'});
+  return out};
+
 // ---------- PDF faktúr do OneDrive ----------
 AUTH.savePdf=async(inv,blob)=>{if(!base)return;const y=String(inv.issueDate||'').slice(0,4)||'bez_roku';const n=String(inv.number||'faktura').replace(/[^\w-]/g,'');
   try{await g(`/me/drive/root:/${enc(base+'/LNStatik_zaloha/Faktury_PDF/'+y+'/Faktura_'+n+'.pdf')}:/content`,{method:'PUT',headers:{'Content-Type':'application/pdf'},body:blob})}catch(e){console.warn('pdf',e)}};
@@ -993,7 +1006,24 @@ function editClient(id){const c=id?{...S.items[id]}:{name:'',street:'',city:'',c
 
 // ===== SB KALENDÁR (GitHub Pages) =====
 const GH_REPO='LN-Statik/lnstatik',GH_PATH='kalendar/index.html';
-let bandT=null;function bandSoon(){if(!(settings().ghToken))return;clearTimeout(bandT);bandT=setTimeout(()=>publishBand(false),60000)}
+let bandT=null,calT=null;function bandSoon(){if(window.AUTH&&AUTH.ok&&AUTH.calSync&&settings().calOn!==false){clearTimeout(calT);calT=setTimeout(()=>syncCal(false),45000)}if(!(settings().ghToken))return;clearTimeout(bandT);bandT=setTimeout(()=>publishBand(false),60000)}
+const CAL_NAME='SB Kapela';
+function calEvent(e){const s=(EST[e.status]||EST.lead)[0];const cancel=e.status==='cancel';const f=+e.fee||0,n=+e.fuel||0;
+  const lines=[['Typ',e.type],['Stav',s],['Miesto',[e.venue,e.city].filter(Boolean).join(', ')],['Dohodnuté',f?eur(f):''],['Nafta',n?eur(n):''],['Spolu',n?eur(f+n):''],
+    ['Záloha',+e.deposit?eur(e.deposit)+(e.depositBy?' (u '+e.depositBy+')':'')+(e.depositPaid?' – prijatá':' – čaká sa'):''],['Kontakt',[e.contact,e.contactEmail].filter(Boolean).join(', ')],['Poznámky',e.notes]].filter(x=>x[1]);
+  const html=lines.map(([k,v])=>`<b>${esc(k)}:</b> ${esc(v).replace(/\n/g,'<br>')}`).join('<br>');
+  const ev={subject:(cancel?'ZRUŠENÉ – ':'')+(e.title||e.type||'Akcia'),body:{contentType:'HTML',content:html},location:{displayName:[e.venue,e.city].filter(Boolean).join(', ')},
+    isReminderOn:!cancel,reminderMinutesBeforeStart:1440,showAs:cancel?'free':'busy',categories:[]};
+  if(e.time){const st=`${e.date}T${e.time}:00`;const d=new Date(`${e.date}T${e.time}:00`);d.setHours(d.getHours()+6);const en=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+    Object.assign(ev,{isAllDay:false,start:{dateTime:st,timeZone:'Europe/Bratislava'},end:{dateTime:en,timeZone:'Europe/Bratislava'}})}
+  else{const d=new Date(e.date+'T12:00');d.setDate(d.getDate()+1);Object.assign(ev,{isAllDay:true,start:{dateTime:e.date+'T00:00:00',timeZone:'Europe/Bratislava'},end:{dateTime:`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T00:00:00`,timeZone:'Europe/Bratislava'}})}
+  return ev}
+async function syncCal(manual){if(!(window.AUTH&&AUTH.ok&&AUTH.calSync)){if(manual)toast('Kalendár ide len v appke na app.lnstatik.sk');return}
+  const el=()=>$('#calSt');try{if(el())el().textContent='Synchronizujem kalendár…';
+    const evs=list('event').filter(e=>e.date).map(e=>({id:e.id,ev:calEvent(e)}));const st=settings();
+    const map=await AUTH.calSync(evs,st.calMap||{},CAL_NAME);const s2=S.items.settings||{};const c=JSON.parse(JSON.stringify({...s2,calMap:map,calAt:Date.now()}));S.items.settings=c;if(col)col.doc('settings').set(c);
+    if(el())el().textContent='Kalendár je synchronizovaný';if(manual)toast(`Kalendár „${CAL_NAME}“ je aktuálny (${evs.length} akcií)`)}
+  catch(e){console.error(e);if(!(e&&e.redirect)){if(el())el().textContent='Kalendár sa nepodarilo synchronizovať';if(manual)toast('Kalendár: '+(e.message||e))}}}
 const u8b64=u=>{let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)};
 async function publishBand(manual){const st=settings();const tok=st.ghToken;const msg=t=>{const e=$('#bandSt');if(e)e.textContent=t;if(manual)toast(t)};
   if(!tok){msg('Najprv vlož GitHub kľúč a ulož nastavenia');return}
@@ -1234,7 +1264,11 @@ function vSettings(){const st=settings(),b=st.biz;
      <div class="dim" style="font-size:13px;margin:4px 0 10px">Stránka sa aktualizuje sama asi minútu po každej zmene akcie. Potrebuje prístupový kľúč z GitHubu.</div>
      <div class="fr"><div class="f"><label>Meno na stránke</label><input name="bandUser" value="${esc(st.bandUser||'simple')}"></div><div class="f"><label>Heslo na stránke</label><input name="bandPw" value="${esc(st.bandPw||'0000SB')}"></div></div>
      <div class="f"><label>GitHub kľúč ${st.ghToken?'<span class="tag ok">nastavený</span>':''}</label><input name="ghToken" type="password" placeholder="${st.ghToken?'ponechať':'github_pat_…'}" autocomplete="off"></div>
-     <button type="button" class="btn sm" onclick="publishBand(true)">Aktualizovať SB Kalendár teraz</button> <span class="dim" id="bandSt" style="font-size:13px">${st.bandAt?'Naposledy '+new Date(st.bandAt).toLocaleString('sk-SK'):''}</span></div>
+     <button type="button" class="btn sm" onclick="publishBand(true)">Aktualizovať SB Kalendár teraz</button>
+    </div>
+    <div style="border-top:1px solid var(--line2);margin-top:12px;padding-top:12px"><b>Kalendár v Outlooku</b> <span class="dim" style="font-size:13px">– „SB Kapela“</span>
+     <div class="dim" style="font-size:13px;margin:4px 0 10px">Všetky akcie sa samé zapisujú do samostatného kalendára „SB Kapela“ v tvojom Outlooku (záloha, pripomienka deň vopred). Tento kalendár môžeš zdieľať s kapelou.</div>
+     <button type="button" class="btn sm" onclick="syncCal(true)">Synchronizovať kalendár teraz</button> <span class="dim" id="calSt" style="font-size:13px">${st.calAt?'Naposledy '+new Date(st.calAt).toLocaleString('sk-SK'):''}</span> <span class="dim" id="bandSt" style="font-size:13px">${st.bandAt?'Naposledy '+new Date(st.bandAt).toLocaleString('sk-SK'):''}</span></div>
    </div>
    <div class="panel"><h3>Šablóna e-mailu</h3>
     <div class="f"><label>Predmet</label><input name="mailSubj" value="${esc(st.mailSubj||DEF_SUBJ)}"></div>

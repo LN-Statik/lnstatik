@@ -98,6 +98,19 @@ async function openAtt(id){const w=window.open('about:blank','_blank');
     const u=j['@microsoft.graph.downloadUrl']||j.webUrl;if(w)w.location=u;else location.href=u}catch(e){if(w)w.close();alert('Prílohu sa nepodarilo otvoriť.')}}
 document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="/_blob/"]');if(!a)return;e.preventDefault();e.stopPropagation();openAtt(decodeURIComponent(a.getAttribute('href').slice(7)))},true);
 
+// ---------- kalendár v Outlooku (záloha akcií kapely) ----------
+AUTH.calSync=async(evs,map,calName)=>{const t=await token(['Calendars.ReadWrite']);const H={Authorization:'Bearer '+t,'Content-Type':'application/json'};
+  const q=async(path,o={})=>{const r=await fetch(GRAPH+path,{...o,headers:{...H,...(o.headers||{})}});if(!r.ok&&r.status!==404){let m='';try{m=(await r.json()).error.message}catch(e){}throw new Error(m||('Outlook '+r.status))}return r};
+  let cal=(await (await q(`/me/calendars?$select=id,name&$top=100`)).json()).value.find(c=>c.name===calName);
+  if(!cal)cal=await (await q('/me/calendars',{method:'POST',body:JSON.stringify({name:calName})})).json();
+  const out={};
+  for(const e of evs){const body=JSON.stringify(e.ev);let id=map[e.id];
+    if(id){const r=await q(`/me/calendars/${cal.id}/events/${encodeURIComponent(id)}`,{method:'PATCH',body});if(r.status===404)id=null}
+    if(!id){const r=await q(`/me/calendars/${cal.id}/events`,{method:'POST',body});id=(await r.json()).id}
+    out[e.id]=id}
+  for(const [k,id] of Object.entries(map))if(!out[k])await q(`/me/calendars/${cal.id}/events/${encodeURIComponent(id)}`,{method:'DELETE'});
+  return out};
+
 // ---------- PDF faktúr do OneDrive ----------
 AUTH.savePdf=async(inv,blob)=>{if(!base)return;const y=String(inv.issueDate||'').slice(0,4)||'bez_roku';const n=String(inv.number||'faktura').replace(/[^\w-]/g,'');
   try{await g(`/me/drive/root:/${enc(base+'/LNStatik_zaloha/Faktury_PDF/'+y+'/Faktura_'+n+'.pdf')}:/content`,{method:'PUT',headers:{'Content-Type':'application/pdf'},body:blob})}catch(e){console.warn('pdf',e)}};
