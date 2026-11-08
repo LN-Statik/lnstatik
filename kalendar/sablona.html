@@ -133,8 +133,9 @@ function render(){
     ${(()=>{const n=up[0];if(!n)return `<div class="fig dark next"><div class="k">Nasledujúca akcia</div><div class="v" style="font-size:17px">Zatiaľ nič naplánované</div></div>`;const d=new Date(n.date+'T12:00');
       return `<div class="fig dark next"><div class="k">Nasledujúca akcia</div><div class="v">${esc(n.title||n.type)}${n.city&&!(n.title||'').includes(n.city)?' · '+esc(n.city):''}</div><div class="k" style="color:#fff;font-size:14px">${d.toLocaleDateString('sk-SK',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}${n.time?', '+esc(n.time):''}</div></div>`})()}
    </div>
+   ${up[0]?`<h2>Nasledujúca akcia</h2>${evCard(up[0])}`:''}
    <h2>Akcie v roku ${y}</h2>
-   ${allY.length?allY.map(evCard).join(''):'<div class="empty">V tomto roku zatiaľ žiadne akcie.</div>'}
+   ${(()=>{const l=allY.filter(e=>!up[0]||e.id!==up[0].id);return l.length?l.map(evCard).join(''):'<div class="empty">V tomto roku žiadne ďalšie akcie.</div>'})()}
    <h2>Prehľad po mesiacoch, ${y}</h2>
    ${gigs.length?`<table><thead><tr><th>Mesiac</th><th class="r">Akcií</th><th class="r">Spolu</th></tr></thead><tbody>${byM.map((v,i)=>v.n?`<tr><td>${MONF[i]}</td><td class="r">${v.n}</td><td class="r">${eur(v.s)}</td></tr>`:'').join('')}<tr><td><b>Spolu</b></td><td class="r"><b>${gigs.length}</b></td><td class="r"><b>${eur(sum(gigs))}</b></td></tr></tbody></table>`:'<div class="empty">V tomto roku zatiaľ žiadne akcie.</div>'}
    <div class="foot">Nafta sa platí navyše a rozdeľuje sa zvlášť.</div>
