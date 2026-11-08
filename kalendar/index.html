@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SB Kalendár</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#F2F3F1;--surface:#fff;--ink:#1F2328;--ink2:#4E555D;--muted:#868D96;--line:#DFE2E4;--line2:#ECEEEF;--ok:#2E7D4F;--warn:#A86500;--bad:#B3261E;--on:#1F6FB0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 "Schibsted Grotesk",system-ui,sans-serif;font-feature-settings:"tnum" 1}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--on);outline-offset:2px}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px;width:100%;max-width:360px}
+.card h1{margin:0 0 4px;font-size:24px}
+.card p{margin:0 0 20px;color:var(--ink2)}
+label{display:block;font-size:13px;font-weight:500;color:var(--ink2);margin:0 0 5px}
+input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;margin-bottom:14px}
+input:focus{outline:none;border-color:var(--ink)}
+.btn{width:100%;border:0;background:var(--ink);color:#fff;padding:12px;border-radius:8px;font-weight:600;cursor:pointer}
+.err{color:var(--bad);font-size:14px;min-height:20px;margin-top:10px}
+header{background:var(--ink);color:#fff;padding:18px 20px}
+header .row{max-width:860px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header h1{margin:0;font-size:20px}
+header small{color:#9AA0A8}
+.yr{display:flex;align-items:center;gap:6px;font-weight:700}
+.yr button{border:1px solid #3A4048;background:transparent;color:#fff;width:32px;height:32px;border-radius:7px;cursor:pointer}
+main{max-width:860px;margin:0 auto;padding:20px 16px 50px}
+.figs{display:grid;grid-template-columns:1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:22px}
+.fig{background:var(--surface);padding:14px 16px}
+.fig .v{font-size:22px;font-weight:700;white-space:nowrap}
+.fig .k{font-size:13px;color:var(--ink2)}
+.fig.dark{background:var(--ink);color:#fff}.fig.dark .k{color:#B9BEC4}
+@media(min-width:700px){.figs{grid-template-columns:1fr 3fr}}
+.fig.next .v{white-space:normal;font-size:20px;margin:2px 0}
+@media(max-width:600px){th,td{padding:7px 6px;font-size:12.5px}td.r,th.r{white-space:nowrap}table{display:block;overflow-x:auto}}
+h2{font-size:17px;margin:26px 0 10px}
+.ev{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;overflow:hidden}
+.ev summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:58px 1fr 20px;gap:14px;align-items:center;padding:12px 16px}
+.ev summary::-webkit-details-marker{display:none}
+.ev .chev{color:var(--muted);font-size:22px;transition:transform .15s;justify-self:end}.ev[open] .chev{transform:rotate(90deg)}
+.ev.past summary{opacity:.75}.ev[open] summary{opacity:1;border-bottom:1px solid var(--line2)}
+.ev .body{padding:4px 16px 16px 88px}
+.lbl{font-weight:600;font-size:14px;margin:16px 0 0}
+@media(max-width:600px){.ev .body{padding:4px 14px 14px}}
+.d{text-align:center;border:1px solid var(--line);border-radius:9px;padding:6px 0;line-height:1.1;align-self:start}
+.d b{display:block;font-size:22px}.d span{font-size:12px;color:var(--muted)}
+.t{font-weight:600;font-size:16px}
+.m{color:var(--ink2);font-size:14px}
+.money{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px;font-size:14px}
+.money b{font-weight:600}
+table.split{margin-top:10px;font-size:13px;border-radius:8px;max-width:520px}table.split th,table.split td{padding:5px 10px}.pk{color:#2F7A4F;font-weight:700}.dimx{color:#B0B5BB}
+.note{margin-top:8px;background:var(--paper);border-radius:8px;padding:8px 10px;font-size:14px;white-space:pre-wrap}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;color:var(--ink2);margin-left:6px}
+.tag::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.tag.ok{color:var(--ok)}.tag.ok::before{background:var(--ok)}
+.tag.warn{color:var(--warn)}.tag.warn::before{background:var(--warn)}
+.tag.bad{color:var(--bad)}.tag.bad::before{background:var(--bad)}
+.tag.on::before{background:var(--on)}
+.empty{color:var(--ink2);background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:20px;text-align:center}
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line2);font-size:14px}
+th{color:var(--muted);font-weight:500}
+.r{text-align:right}
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.thumb img{width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block}.file{display:inline-flex;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:8px;color:var(--ink);text-decoration:none;font-size:13.5px;background:var(--paper)}
+.foot{color:var(--muted);font-size:12.5px;margin-top:28px;text-align:center}
+.out{background:transparent;border:1px solid #3A4048;color:#C9CDD2;border-radius:7px;padding:6px 10px;cursor:pointer;font-size:13px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const BLOB={"s": "ZyFyrNYwg3EL7QzOd4dpnQ==", "i": "kMjV9Brz/2RA0dLm", "c": "RFXdOZpJZfcEcLWxCS3uwqicTXqGSSU2Nwnus0yZxXi0I/XuQ504+vLIR3UvQcIgjcp5UMtIO0Wva/ODwsPpi1Wj6qEGyA7tnvjob4hQFbwqUnUuzfNyPAQjWfsfVOUJMCUG6mwtJNw2DisiY/V13ERPLzVNwAY1BUF64EGEU1NbtUQjzOvW7K2+tUDRmODMEHkIIwlnKTYAZYpgQ1jNNCoPmd2h0im2nVyb9QakyBnUDH0vRFoAjK3griIU+0zomgiQc9MLY4t6R+KOOA6iWe5N+4eXVgDaFqPm/6wglJTwOdbp6kRaRKEUpxNIvyp8rI1pqafjh4hKt58OxQRnohU5Eq6nZkpxqN588RqMD2T6yVZS5pywov7BWqLMEJ4kbz8AL+28y43OU5VAEbfgCmtridaGFKl3QVWCKUGRmD5QiMecsvftlRfbq+FQve5fIqxnqOyhwnSUPCSrXgZ6vZ1jh/u0GgNaAfXp+ocodwUh52+ssXNonjjge/p65e6KnYfJAq6uZQ2gjV4FVeYD7nRdKbFedAUq7nvGq2Q436q8vbqlxIOBOQ996CDoYqNZMb1yFjOnuHTMqWmSeZ3mNzIA+vepmRRiO+JBQaI2caQbUh8BlzN65hoJWaMlYpLyGLmZqne50KlVCT7A04ElvOTK4c3PlaxiSBdPVN5CgruLu46eTe/RF6I0lIFgr6GV94ALtI8Cp8HpQICPEHcPAY7fcxwpOmq8P/lKjSjQzElFM/FYNQD5FpBQXppvRNhxz064Abewp8GZeHSWZ8IMkVAwcdjBkjvNyCJx4crse/X+dvAGkk10txN1OZ2VtTT1MU+OFsJcJuohHuHY+kt/4UuS8WENRd07JCOMg0WBYsEbH36gH5Jr8jSwm2gHKiQVGIFxGwt3yvZTMsbdH2qttBciZZvFMJvka4ZViA1naCJST+rbSexrMbTLR7Hrz85b+0HzmFzFtULLanKsokBBGWtELpIkA/EPA9ZYQwcuRIV9Ur23uOqliTl6zg8AF7r3XJ0iJR8y2ZT10Yd09bntYYpDam+7B3IYn+g1nTaUeuhBZrscEoBTu9rPmi8XwcOyXy/GRnCHb+PhZPEUiDwIZlbzBQk41YA7lbOcrEj6MKRT6FiC73JqRngkG3M=", "n": 250000};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const eur=n=>(Number(n)||0).toLocaleString('sk-SK',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+const eur0=n=>Math.round(Number(n)||0).toLocaleString('sk-SK')+' €';
+const MON=['jan','feb','mar','apr','máj','jún','júl','aug','sep','okt','nov','dec'];
+const MONF=['Január','Február','Marec','Apríl','Máj','Jún','Júl','August','September','Október','November','December'];
+const EST={lead:['Dopyt',''],ok:['Potvrdené','on'],done:['Odohrané','warn'],paid:['Zaplatené','ok'],cancel:['Zrušené','bad']};
+const pad=n=>String(n).padStart(2,'0');
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+let DATA=null,YEAR=new Date().getFullYear();
+function splitOf(e){const ms=DATA.members||['Tomi','Laci','Marian','Daniel','Adam'];const sp=e.split&&typeof e.split==='object'&&Object.keys(e.split).length?e.split:null;const names=sp?Object.keys(sp):ms;const fee=+e.fee||0;
+  const set=names.filter(n=>sp&&sp[n]&&sp[n].base!==''&&sp[n].base!=null);const fixed=set.reduce((s,n)=>s+(+sp[n].base||0),0);const rest=names.length-set.length;const eq=rest?(fee-fixed)/rest:0;
+  return names.map(n=>{const s=(sp||{})[n]||{};const base=set.includes(n)?(+s.base||0):eq;const fuel=+s.fuel||0;return {name:n,base,fuel,total:base+fuel,paid:sp?!!s.paid:e.status==='paid'}})}
+const perMember=e=>{const f=+e.fee||0,m=Math.max(1,+e.members||5);return f/m};
+
+async function unlock(user,pw){
+  const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(user.trim().toLowerCase()+':'+pw),'PBKDF2',false,['deriveKey']);
+  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(BLOB.s),iterations:BLOB.n,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(BLOB.i)},key,b64(BLOB.c));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+function loginView(msg){
+  $('#app').innerHTML=`<div class="login"><form class="card" id="lf"><h1 style="margin-bottom:20px">SB Kalendár</h1>
+  <label for="u">Meno</label><input id="u" autocomplete="username" required>
+  <label for="p">Heslo</label><input id="p" type="password" inputmode="numeric" autocomplete="current-password" required>
+  <button class="btn" id="go">Prihlásiť sa</button><div class="err" id="err">${esc(msg||'')}</div></form></div>`;
+  $('#u').focus();
+  $('#lf').onsubmit=async e=>{e.preventDefault();const b=$('#go');b.disabled=true;b.textContent='Overujem…';
+    try{DATA=await unlock($('#u').value,$('#p').value);try{sessionStorage.setItem('kap',JSON.stringify([$('#u').value,$('#p').value]))}catch(x){}render()}
+    catch(x){b.disabled=false;b.textContent='Prihlásiť sa';$('#err').textContent='Nesprávne meno alebo heslo.'}};
+}
+function dateBox(s){const d=new Date(s+'T12:00');return `<div class="d"><b>${d.getDate()}</b><span>${MON[d.getMonth()]} ${String(d.getFullYear()).slice(2)}</span></div>`}
+function evCard(e){const s=EST[e.status]||EST.lead;const f=+e.fee||0,n=+e.fuel||0;const past=e.date<today();
+  return `<details class="ev${past?' past':''}"><summary>${dateBox(e.date)}<div class="sm">
+    <div class="t">${esc(e.title||e.type)}<span class="tag ${s[1]}">${s[0]}</span></div>
+    <div class="m">${esc([e.type,e.time,e.venue,e.city].filter(Boolean).join(' · '))}</div></div><span class="chev" aria-hidden="true">›</span></summary>
+   <div class="body">
+   ${f?`<div class="money"><span>Dohodnuté <b>${eur(f)}</b></span>${n?`<span>Nafta navyše <b>${eur(n)}</b></span>`:''}</div>`:''}
+   ${+e.deposit?`<div class="money"><span>Záloha <b>${eur(e.deposit)}</b>${e.depositBy?` (u ${esc({Laci:'Laciho',Tomi:'Tomiho'}[e.depositBy]||e.depositBy)})`:''}<span class="tag ${e.depositPaid?'ok':'warn'}">${e.depositPaid?'prijatá':'čaká sa'}</span></span>${f?`<span>Doplatok <b>${eur(f+n-(+e.deposit||0))}</b></span>`:''}</div>`:''}
+   ${e.contact||e.contactEmail?`<div class="m" style="margin-top:8px">Kontakt: ${esc([e.contact,e.contactEmail].filter(Boolean).join(', '))}</div>`:''}
+   ${e.notes?`<div class="note">${esc(e.notes)}</div>`:''}
+   ${(e.files||[]).length?`<div class="files">${e.files.map(f=>/^image\//.test(f.type)?`<a href="${esc(f.url)}" target="_blank" rel="noopener" class="thumb"><img src="${esc(f.url)}" alt="${esc(f.name)}"></a>`:`<a href="${esc(f.url)}" target="_blank" rel="noopener" class="file">PDF · ${esc(f.name)}</a>`).join('')}</div>`:''}
+   ${f&&e.status!=='cancel'?`<div class="lbl">Kto koľko dostane</div><table class="split"><thead><tr><th>Člen</th><th class="r">Z ceny</th><th class="r">Nafta</th><th class="r">Spolu</th><th class="r">Vyplatené</th></tr></thead><tbody>${splitOf(e).map(r=>`<tr><td>${esc(r.name)}</td><td class="r">${eur(r.base)}</td><td class="r">${r.fuel?eur(r.fuel):'—'}</td><td class="r"><b>${eur(r.total)}</b></td><td class="r">${r.paid?'<span class="pk">✓</span>':'<span class="dimx">—</span>'}</td></tr>`).join('')}</tbody></table>`:''}
+   </div></details>`}
+function render(){
+  const all=DATA.events||[];const t=today();const y=String(YEAR);
+  const yr=all.filter(e=>(e.date||'').startsWith(y)&&e.status!=='cancel');const gigs=yr.filter(e=>e.type!=='Skúška');
+  const sum=a=>a.reduce((s,e)=>s+(+e.fee||0),0),fuel=a=>a.reduce((s,e)=>s+(+e.fuel||0),0),pm=a=>a.reduce((s,e)=>s+(+e.fee?perMember(e):0),0);
+  const up=all.filter(e=>e.date>=t&&e.status!=='cancel');
+  const allY=all.filter(e=>(e.date||'').startsWith(y)).sort((a,b)=>((b.date||'')+(b.time||'')).localeCompare((a.date||'')+(a.time||'')));
+  const byM=Array(12).fill(0).map(()=>({n:0,s:0,p:0}));gigs.forEach(e=>{const m=+e.date.slice(5,7)-1;byM[m].n++;byM[m].s+=+e.fee||0;byM[m].p+=+e.fee?perMember(e):0});
+  $('#app').innerHTML=`<header><div class="row"><div><h1>SB Kalendár</h1><small>Aktualizované ${esc(DATA.updated||'')}</small></div>
+   <div style="display:flex;gap:10px;align-items:center"><div class="yr"><button aria-label="Predošlý rok" id="yp">‹</button><span>${YEAR}</span><button aria-label="Ďalší rok" id="yn">›</button></div><button class="out" id="lo">Odhlásiť</button></div></div></header>
+  <main>
+   <div class="figs">
+    <div class="fig"><div class="v">${gigs.length}</div><div class="k">Akcií v roku ${y}</div></div>
+    ${(()=>{const n=up[0];if(!n)return `<div class="fig dark next"><div class="k">Nasledujúca akcia</div><div class="v" style="font-size:17px">Zatiaľ nič naplánované</div></div>`;const d=new Date(n.date+'T12:00');
+      return `<div class="fig dark next"><div class="k">Nasledujúca akcia</div><div class="v">${esc(n.title||n.type)}${n.city&&!(n.title||'').includes(n.city)?' · '+esc(n.city):''}</div><div class="k" style="color:#fff;font-size:14px">${d.toLocaleDateString('sk-SK',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}${n.time?', '+esc(n.time):''}</div></div>`})()}
+   </div>
+   <h2>Akcie v roku ${y}</h2>
+   ${allY.length?allY.map(evCard).join(''):'<div class="empty">V tomto roku zatiaľ žiadne akcie.</div>'}
+   <h2>Prehľad po mesiacoch, ${y}</h2>
+   ${gigs.length?`<table><thead><tr><th>Mesiac</th><th class="r">Akcií</th><th class="r">Spolu</th></tr></thead><tbody>${byM.map((v,i)=>v.n?`<tr><td>${MONF[i]}</td><td class="r">${v.n}</td><td class="r">${eur(v.s)}</td></tr>`:'').join('')}<tr><td><b>Spolu</b></td><td class="r"><b>${gigs.length}</b></td><td class="r"><b>${eur(sum(gigs))}</b></td></tr></tbody></table>`:'<div class="empty">V tomto roku zatiaľ žiadne akcie.</div>'}
+   <div class="foot">Nafta sa platí navyše a rozdeľuje sa zvlášť.</div>
+  </main>`;
+  $('#yp').onclick=()=>{YEAR--;render()};$('#yn').onclick=()=>{YEAR++;render()};
+  $('#lo').onclick=()=>{DATA=null;try{sessionStorage.removeItem('kap')}catch(x){}loginView()};
+}
+(async()=>{let s=null;try{s=JSON.parse(sessionStorage.getItem('kap')||'null')}catch(x){}
+  if(s){try{DATA=await unlock(s[0],s[1]);render();return}catch(x){}}loginView()})();
+</script>
+</body>
+</html>
