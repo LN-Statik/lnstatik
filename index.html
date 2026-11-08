@@ -748,6 +748,12 @@ const DEF_SUBJ='Faktúra č. {cislo} – {firma}';
 const DEF_BODY=`Dobrý deň,
 
 v prílohe Vám posielam faktúru č. {cislo}
+{poznamka}
+
+S pozdravom`;
+const PREV2_BODY=`Dobrý deň,
+
+v prílohe Vám posielam faktúru č. {cislo}
 za obdobie - {mesiace}
 
 S pozdravom`;
@@ -764,7 +770,7 @@ const MESIACE=['január','február','marec','apríl','máj','jún','júl','augus
 function monthsOf(inv){const low=String(inv.note||'').toLowerCase();const w=MESIACE.filter(x=>low.includes(x.slice(0,4)));if(w.length)return w.join(' / ');let s=String(inv.note||'').replace(/\b(19|20)\d\d\b/g,' ');const out=[];const re=/\b(0?[1-9]|1[0-2])\b(?:\s*-\s*(0?[1-9]|1[0-2])\b(?!\s*[-~]))?/g;let m;
   while((m=re.exec(s))){const a=+m[1],b=m[2]?+m[2]:a;if(b>=a&&b-a<12)for(let i=a;i<=b;i++)out.push(i);else out.push(a,b)}
   const u=[...new Set(out)];if(!u.length&&inv.supplyDate)u.push(+inv.supplyDate.slice(5,7));return u.map(i=>MESIACE[i-1]).join(' / ')}
-const isDefBody=b=>!b||b===OLD_BODY||b===PREV_BODY||b===DEF_BODY;
+const isDefBody=b=>!b||b===OLD_BODY||b===PREV_BODY||b===PREV2_BODY||b===DEF_BODY;
 const OLD_BODY=`Dobrý deň,
 
 v prílohe Vám posielam faktúru č. {cislo} {obdobie} na sumu {suma}.
@@ -777,7 +783,7 @@ S pozdravom
 {meno}
 {telefon}`;
 function fillTpl(tpl,inv){const st=settings();const t=invTotal(inv);
-  const map={cislo:inv.number,suma:eur(t.total),splatnost:fd(inv.dueDate),vs:inv.vs,iban:st.biz.iban,odberatel:(inv.client||{}).name||'',obdobie:inv.note&&inv.note!=='-'?'('+inv.note+')':'',mesiace:monthsOf(inv),firma:st.biz.name,meno:st.biz.contact||st.biz.name,telefon:st.biz.phone,email:st.biz.email};
+  const map={cislo:inv.number,suma:eur(t.total),splatnost:fd(inv.dueDate),vs:inv.vs,iban:st.biz.iban,odberatel:(inv.client||{}).name||'',obdobie:inv.note&&inv.note!=='-'?'('+inv.note+')':'',mesiace:monthsOf(inv),poznamka:inv.note&&inv.note!=='-'?inv.note:'',firma:st.biz.name,meno:st.biz.contact||st.biz.name,telefon:st.biz.phone,email:st.biz.email};
   return String(tpl).replace(/\{(\w+)\}/g,(m,k)=>k in map?map[k]:m).replace(/ +\./g,'.').replace(/  +/g,' ')}
 function mailText(inv){const st=settings();const b=st.biz;const tpl=isDefBody(st.mailBody)?DEF_BODY:st.mailBody;
   const sigTxt=['',b.contact||b.name,'LN · STATIK – statika stavieb',[b.phone,b.email].filter(Boolean).join('  |  ')].join('\n');
