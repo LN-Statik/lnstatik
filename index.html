@@ -1064,7 +1064,7 @@ const u8b64=u=>{let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode
 const PUB_T=['Koncert','Ples','Festival'];const isPub=e=>e.public===true||(e.public!==false&&PUB_T.includes(e.type));
 function pubPage(){const st=settings();const name=st.bandName||'Simple Band';const t=today();
   const evs=list('event').filter(e=>isPub(e)&&e.status!=='cancel'&&e.date).sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||'')));
-  const up=evs.filter(e=>e.date>=t),past=evs.filter(e=>e.date<t).reverse().slice(0,12);
+  const up=evs.filter(e=>e.date>=t);
   const MN=['jan','feb','mar','apr','máj','jún','júl','aug','sep','okt','nov','dec'];const DN=['nedeľa','pondelok','utorok','streda','štvrtok','piatok','sobota'];
   const card=e=>{const d=new Date(e.date+'T12:00');return `<div class="ev"><div class="d"><b>${d.getDate()}</b><span>${MN[d.getMonth()]} ${d.getFullYear()}</span></div><div><div class="t">${esc(e.title||e.type)}</div><div class="m">${esc([DN[d.getDay()],e.time,e.venue,e.city].filter(Boolean).join(' · '))}</div></div></div>`};
   return `<!DOCTYPE html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(name)} – kde hráme</title>
@@ -1075,11 +1075,10 @@ main{max-width:720px;margin:0 auto;padding:22px 16px 50px}h2{font-size:18px;marg
 .empty{background:#fff;border:1px dashed #DFE2E4;border-radius:12px;padding:18px;text-align:center;color:#868D96}.sub{display:block;text-align:center;margin-top:26px;font-size:14px;color:#4E555D}footer{text-align:center;color:#868D96;font-size:12px;padding-bottom:24px}</style></head>
 <body><header><h1>${esc(name)}</h1><p>Kde nás môžete počuť</p></header><main>
 <h2>Najbližšie vystúpenia</h2>${up.length?up.map(card).join(''):'<div class="empty">Momentálne nemáme naplánované verejné vystúpenia.</div>'}
-${past.length?`<h2>Odohrané</h2><div class="past">${past.map(card).join('')}</div>`:''}
 <a class="sub" href="kalendar.ics">Pridať do svojho kalendára (odber)</a></main><footer>Aktualizované ${new Date().toLocaleDateString('sk-SK')}</footer></body></html>`}
 function pubIcs(){const st=settings();const name=st.bandName||'Simple Band';const p2=n=>String(n).padStart(2,'0');const esc2=s=>String(s||'').replace(/[\\;,]/g,m=>'\\'+m).replace(/\n/g,'\\n');
   const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//LNStatik//SB//SK','CALSCALE:GREGORIAN','X-WR-CALNAME:'+esc2(name),'X-WR-TIMEZONE:Europe/Bratislava'];
-  list('event').filter(e=>isPub(e)&&e.status!=='cancel'&&e.date).forEach(e=>{const ds=e.date.replace(/-/g,'');L.push('BEGIN:VEVENT','UID:'+e.id+'@lnstatik.sk','DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z','SUMMARY:'+esc2(e.title||e.type),'LOCATION:'+esc2([e.venue,e.city].filter(Boolean).join(', ')));
+  list('event').filter(e=>isPub(e)&&e.status!=='cancel'&&e.date&&e.date>=today()).forEach(e=>{const ds=e.date.replace(/-/g,'');L.push('BEGIN:VEVENT','UID:'+e.id+'@lnstatik.sk','DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z','SUMMARY:'+esc2(e.title||e.type),'LOCATION:'+esc2([e.venue,e.city].filter(Boolean).join(', ')));
     if(e.time){const [hh,mm]=e.time.split(':');const end=new Date(e.date+'T'+e.time);end.setHours(end.getHours()+6);L.push('DTSTART;TZID=Europe/Bratislava:'+ds+'T'+hh+mm+'00','DTEND;TZID=Europe/Bratislava:'+end.getFullYear()+p2(end.getMonth()+1)+p2(end.getDate())+'T'+p2(end.getHours())+p2(end.getMinutes())+'00')}
     else{const n=new Date(e.date+'T12:00');n.setDate(n.getDate()+1);L.push('DTSTART;VALUE=DATE:'+ds,'DTEND;VALUE=DATE:'+n.getFullYear()+p2(n.getMonth()+1)+p2(n.getDate()))}L.push('END:VEVENT')});
   L.push('END:VCALENDAR');return L.join('\r\n')}
