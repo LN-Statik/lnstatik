@@ -831,6 +831,10 @@ async function makeEml(invs,to){invs=[].concat(invs);const inv=invs[0];const m=m
     ...pdfs.flatMap(p=>[`--${B1}`,`Content-Type: application/pdf; name="${p.fn}"`,`Content-Disposition: attachment; filename="${p.fn}"`,'Content-Transfer-Encoding: base64','',wrap76(p.b64),'']),`--${B1}--`,''].join('\r\n');
   return {eml,fn:fn.replace('.pdf','.eml')}}
 async function outlookDraft(invs,to,btn){invs=[].concat(invs);const inv=invs[0];const o=btn.textContent;btn.disabled=true;btn.textContent='Pripravujem e-mail…';
+  const mobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(window.AUTH&&!mobile){try{const {eml,fn}=await makeEml(invs,to);const u=URL.createObjectURL(new Blob([eml],{type:'message/rfc822'}));const a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);
+      toast('E-mail sa otvorí v Outlooku – klikni na stiahnutý súbor, ak sa neotvorí sám')}catch(e){console.error(e);toast('E-mail sa nepodarilo pripraviť')}
+    btn.disabled=false;btn.textContent=o;return}
   if(window.AUTH&&AUTH.ok&&AUTH.mailDraft){const w=null;
     try{const m=mailTextMulti(invs);const pdfs=[];for(const x of invs)pdfs.push({name:pdfName(x),b64:await pdfB64(x)});
       let logo='';try{logo=await logoPng()}catch(e){}
@@ -861,7 +865,7 @@ function sendInvoice(id,extra){const base={...S.items[id]};const to=(base.client
   <div class="f"><label>Predmet</label><input id="subj" readonly></div>
   <div class="f"><label>Text <span class="dim" style="font-weight:400">(šablónu upravíš v Nastaveniach)</span></label><pre class="mail" id="bodyPrev"></pre></div>
   <div class="panel" style="padding:14px 16px;margin-bottom:12px;background:var(--paper)">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><b>E-mail pre Outlook s prílohou</b><div class="dim" style="font-size:13px">${window.AUTH?'Vytvorí sa v Outlooku v Konceptoch aj s PDF a podpisom – na PC aj v telefóne. Stačí ho otvoriť a kliknúť Odoslať.':'Stiahne sa ZIP. Otvor ho a dvakrát klikni na e-mail, Outlook ho otvorí aj s PDF. Stačí kliknúť Odoslať.'}</div></div><button class="btn p" id="ol">${window.AUTH?'Pripraviť v Outlooku':'Pripraviť e-mail'}</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><b>E-mail pre Outlook s prílohou</b><div class="dim" style="font-size:13px">${window.AUTH?(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)?'Pripraví sa v Outlooku v Konceptoch aj s PDF a podpisom. Otvor ho v aplikácii Outlook a klikni Odoslať.':'Otvorí sa nové okno správy v Outlooku s textom, PDF prílohou a podpisom. Odoslať klikneš ty.'):'Stiahne sa ZIP. Otvor ho a dvakrát klikni na e-mail, Outlook ho otvorí aj s PDF. Stačí kliknúť Odoslať.'}</div></div><button class="btn p" id="ol">${window.AUTH?'Otvoriť v Outlooku':'Pripraviť e-mail'}</button></div>
   </div>
   <div class="mfoot"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="dl">Len PDF</button><a class="btn" id="mt" target="_blank" rel="noopener">Otvoriť v pošte bez prílohy</a></div>
   <div style="display:flex;gap:8px"><button class="btn" id="ms">Označiť ako odoslané</button><button class="btn q" onclick="closeModal()">Hotovo</button></div></div>`);
