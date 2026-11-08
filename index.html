@@ -274,9 +274,9 @@ AUTH.loginHTML=function(){
 AUTH.login=()=>msal.loginRedirect({scopes:SCOPES,prompt:'select_account'});
 AUTH.logout=()=>msal.logoutRedirect({account});
 
-async function token(){
-  try{return (await msal.acquireTokenSilent({scopes:SCOPES,account})).accessToken}
-  catch(e){await msal.acquireTokenRedirect({scopes:SCOPES,account});throw e}}
+async function token(sc){sc=sc||SCOPES;
+  try{return (await msal.acquireTokenSilent({scopes:sc,account})).accessToken}
+  catch(e){if(sc!==SCOPES){return (await msal.acquireTokenPopup({scopes:sc,account})).accessToken}await msal.acquireTokenRedirect({scopes:sc,account});throw e}}
 async function g(path,opt={}){
   const t=await token();
   return fetch(path.startsWith('http')?path:GRAPH+path,{...opt,headers:{Authorization:'Bearer '+t,...(opt.headers||{})}})}
@@ -341,6 +341,15 @@ async function openAtt(id){const w=window.open('about:blank','_blank');
   try{const r=await g(`/me/drive/items/${encodeURIComponent(id)}?$select=@microsoft.graph.downloadUrl,webUrl,file`);const j=await r.json();
     const u=j['@microsoft.graph.downloadUrl']||j.webUrl;if(w)w.location=u;else location.href=u}catch(e){if(w)w.close();alert('Prílohu sa nepodarilo otvoriť.')}}
 document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="/_blob/"]');if(!a)return;e.preventDefault();e.stopPropagation();openAtt(decodeURIComponent(a.getAttribute('href').slice(7)))},true);
+
+// ---------- Outlook koncept ----------
+AUTH.mailDraft=async({subject,html,to,pdf,logo})=>{const t=await token(['Mail.ReadWrite']);
+  const att=[{'@odata.type':'#microsoft.graph.fileAttachment',name:pdf.name,contentType:'application/pdf',contentBytes:pdf.b64}];
+  if(logo)att.push({'@odata.type':'#microsoft.graph.fileAttachment',name:'lnstatik.png',contentType:'image/png',contentBytes:logo,isInline:true,contentId:'lnlogo@lnstatik'});
+  const r=await fetch(GRAPH+'/me/messages',{method:'POST',headers:{Authorization:'Bearer '+t,'Content-Type':'application/json'},
+    body:JSON.stringify({subject,body:{contentType:'HTML',content:html},toRecipients:String(to||'').split(/[,;]\s*/).filter(Boolean).map(a=>({emailAddress:{address:a}})),attachments:att})});
+  if(!r.ok){let m='';try{m=(await r.json()).error.message}catch(e){}throw new Error(m||('Outlook '+r.status))}
+  const j=await r.json();return j.webLink||'https://outlook.office.com/mail/drafts'};
 
 // ---------- sťahovanie ----------
 const downloads={save:async({filename,data})=>{const b=data instanceof Blob?data:new Blob([data],{type:'application/octet-stream'});
@@ -738,6 +747,12 @@ async function downloadPdf(inv,btn){const o=btn.textContent;btn.disabled=true;bt
 const DEF_SUBJ='Faktúra č. {cislo} – {firma}';
 const DEF_BODY=`Dobrý deň,
 
+v prílohe Vám posielam faktúru č. {cislo}
+za obdobie - {mesiace}
+
+S pozdravom`;
+const PREV_BODY=`Dobrý deň,
+
 v prílohe Vám posielam faktúru č. {cislo} {obdobie} na sumu {suma}.
 
 IBAN: {iban}
@@ -745,6 +760,11 @@ Variabilný symbol: {vs}
 Splatnosť: {splatnost}
 
 S pozdravom`;
+const MESIACE=['január','február','marec','apríl','máj','jún','júl','august','september','október','november','december'];
+function monthsOf(inv){const low=String(inv.note||'').toLowerCase();const w=MESIACE.filter(x=>low.includes(x.slice(0,4)));if(w.length)return w.join(' / ');let s=String(inv.note||'').replace(/\b(19|20)\d\d\b/g,' ');const out=[];const re=/\b(0?[1-9]|1[0-2])\b(?:\s*-\s*(0?[1-9]|1[0-2])\b(?!\s*[-~]))?/g;let m;
+  while((m=re.exec(s))){const a=+m[1],b=m[2]?+m[2]:a;if(b>=a&&b-a<12)for(let i=a;i<=b;i++)out.push(i);else out.push(a,b)}
+  const u=[...new Set(out)];if(!u.length&&inv.supplyDate)u.push(+inv.supplyDate.slice(5,7));return u.map(i=>MESIACE[i-1]).join(' / ')}
+const isDefBody=b=>!b||b===OLD_BODY||b===PREV_BODY||b===DEF_BODY;
 const OLD_BODY=`Dobrý deň,
 
 v prílohe Vám posielam faktúru č. {cislo} {obdobie} na sumu {suma}.
@@ -757,9 +777,9 @@ S pozdravom
 {meno}
 {telefon}`;
 function fillTpl(tpl,inv){const st=settings();const t=invTotal(inv);
-  const map={cislo:inv.number,suma:eur(t.total),splatnost:fd(inv.dueDate),vs:inv.vs,iban:st.biz.iban,odberatel:(inv.client||{}).name||'',obdobie:inv.note&&inv.note!=='-'?'('+inv.note+')':'',firma:st.biz.name,meno:st.biz.contact||st.biz.name,telefon:st.biz.phone,email:st.biz.email};
+  const map={cislo:inv.number,suma:eur(t.total),splatnost:fd(inv.dueDate),vs:inv.vs,iban:st.biz.iban,odberatel:(inv.client||{}).name||'',obdobie:inv.note&&inv.note!=='-'?'('+inv.note+')':'',mesiace:monthsOf(inv),firma:st.biz.name,meno:st.biz.contact||st.biz.name,telefon:st.biz.phone,email:st.biz.email};
   return String(tpl).replace(/\{(\w+)\}/g,(m,k)=>k in map?map[k]:m).replace(/ +\./g,'.').replace(/  +/g,' ')}
-function mailText(inv){const st=settings();const b=st.biz;const tpl=(!st.mailBody||st.mailBody===OLD_BODY)?DEF_BODY:st.mailBody;
+function mailText(inv){const st=settings();const b=st.biz;const tpl=isDefBody(st.mailBody)?DEF_BODY:st.mailBody;
   const sigTxt=['',b.contact||b.name,'LN · STATIK – statika stavieb',[b.phone,b.email].filter(Boolean).join('  |  ')].join('\n');
   return {subject:fillTpl(st.mailSubj||DEF_SUBJ,inv),body:fillTpl(tpl,inv),sig:sigTxt}}
 async function logoPng(){const svg=lnMark(80,'#9AA0A8','#1F2328').replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" ');
@@ -793,6 +813,13 @@ async function makeEml(inv,to){const m=mailText(inv);const pdf=await makePdf(inv
     `--${B1}`,`Content-Type: application/pdf; name="${fn}"`,`Content-Disposition: attachment; filename="${fn}"`,'Content-Transfer-Encoding: base64','',wrap76(btoa(bin)),'',`--${B1}--`,''].join('\r\n');
   return {eml,fn:fn.replace('.pdf','.eml')}}
 async function outlookDraft(inv,to,btn){const o=btn.textContent;btn.disabled=true;btn.textContent='Pripravujem e-mail…';
+  if(window.AUTH&&AUTH.ok&&AUTH.mailDraft){const w=window.open('about:blank','_blank');
+    try{const m=mailText(inv);const pdf=await makePdf(inv);const buf=new Uint8Array(await pdf.arrayBuffer());let bin='';for(let i=0;i<buf.length;i+=0x8000)bin+=String.fromCharCode.apply(null,buf.subarray(i,i+0x8000));
+      let logo='';try{logo=await logoPng()}catch(e){}
+      const link=await AUTH.mailDraft({subject:m.subject,html:mailHtml(m),to,pdf:{name:`Faktura_${String(inv.number).replace(/[^\w-]/g,'')}.pdf`,b64:btoa(bin)},logo});
+      if(w)w.location=link;else location.href=link;toast('E-mail je pripravený v Outlooku (aj v Konceptoch)')}
+    catch(e){console.error(e);if(w)w.close();toast('E-mail sa nepodarilo vytvoriť v Outlooku'+(e&&e.message?': '+e.message:''))}
+    btn.disabled=false;btn.textContent=o;return}
   try{if(typeof JSZip==='undefined')throw new Error('zip');const {eml,fn}=await makeEml(inv,to);const z=new JSZip();z.file(fn,eml);
     const blob=await z.generateAsync({type:'blob'});const dl=await claude.use('downloads');
     if(!dl)toast('Sťahovanie tu nie je dostupné.');
@@ -807,7 +834,7 @@ function sendInvoice(id){const inv={...S.items[id]};const m=mailText(inv);const 
   <div class="f"><label>Text <span class="dim" style="font-weight:400">(šablónu upravíš v Nastaveniach)</span></label><pre class="mail">${esc(m.body)}<span style="display:block;border-top:1px solid var(--line);margin-top:10px;padding-top:8px;color:var(--ink2)">${esc(m.sig.trim())}
 <i>+ logo LN · STATIK</i></span></pre></div>
   <div class="panel" style="padding:14px 16px;margin-bottom:12px;background:var(--paper)">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><b>E-mail pre Outlook s prílohou</b><div class="dim" style="font-size:13px">Stiahne sa ZIP. Otvor ho a dvakrát klikni na e-mail, Outlook ho otvorí aj s PDF. Stačí kliknúť Odoslať.</div></div><button class="btn p" id="ol">Pripraviť e-mail</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><b>E-mail pre Outlook s prílohou</b><div class="dim" style="font-size:13px">${window.AUTH?'Otvorí sa rovno v Outlooku aj s PDF a podpisom. Stačí skontrolovať a kliknúť Odoslať.':'Stiahne sa ZIP. Otvor ho a dvakrát klikni na e-mail, Outlook ho otvorí aj s PDF. Stačí kliknúť Odoslať.'}</div></div><button class="btn p" id="ol">${window.AUTH?'Otvoriť v Outlooku':'Pripraviť e-mail'}</button></div>
   </div>
   <div class="mfoot"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="dl">Len PDF</button><a class="btn" id="mt" href="${esc(mk(to))}" target="_blank" rel="noopener">Otvoriť v pošte bez prílohy</a></div>
   <div style="display:flex;gap:8px">${inv.status==='draft'?'<button class="btn" id="ms">Označiť ako odoslanú</button>':''}<button class="btn q" onclick="closeModal()">Hotovo</button></div></div>`);
@@ -1079,7 +1106,7 @@ function vSettings(){const st=settings(),b=st.biz;
    </div>
    <div class="panel"><h3>Šablóna e-mailu</h3>
     <div class="f"><label>Predmet</label><input name="mailSubj" value="${esc(st.mailSubj||DEF_SUBJ)}"></div>
-    <div class="f"><label>Text</label><textarea name="mailBody" style="min-height:200px">${esc((!st.mailBody||st.mailBody===OLD_BODY)?DEF_BODY:st.mailBody)}</textarea></div>
+    <div class="f"><label>Text</label><textarea name="mailBody" style="min-height:200px">${esc(isDefBody(st.mailBody)?DEF_BODY:st.mailBody)}</textarea></div>
     <div class="dim" style="font-size:12.5px;line-height:1.6">Môžeš použiť: {cislo} {suma} {splatnost} {vs} {iban} {odberatel} {obdobie} {meno} {telefon} {firma}. Pod text sa automaticky pridá podpis s logom LN · STATIK, menom, telefónom a e-mailom.</div>
    </div>
    <div class="panel"><h3>Záloha</h3>

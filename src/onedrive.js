@@ -21,9 +21,9 @@ AUTH.loginHTML=function(){
 AUTH.login=()=>msal.loginRedirect({scopes:SCOPES,prompt:'select_account'});
 AUTH.logout=()=>msal.logoutRedirect({account});
 
-async function token(){
-  try{return (await msal.acquireTokenSilent({scopes:SCOPES,account})).accessToken}
-  catch(e){await msal.acquireTokenRedirect({scopes:SCOPES,account});throw e}}
+async function token(sc){sc=sc||SCOPES;
+  try{return (await msal.acquireTokenSilent({scopes:sc,account})).accessToken}
+  catch(e){if(sc!==SCOPES){return (await msal.acquireTokenPopup({scopes:sc,account})).accessToken}await msal.acquireTokenRedirect({scopes:sc,account});throw e}}
 async function g(path,opt={}){
   const t=await token();
   return fetch(path.startsWith('http')?path:GRAPH+path,{...opt,headers:{Authorization:'Bearer '+t,...(opt.headers||{})}})}
@@ -88,6 +88,15 @@ async function openAtt(id){const w=window.open('about:blank','_blank');
   try{const r=await g(`/me/drive/items/${encodeURIComponent(id)}?$select=@microsoft.graph.downloadUrl,webUrl,file`);const j=await r.json();
     const u=j['@microsoft.graph.downloadUrl']||j.webUrl;if(w)w.location=u;else location.href=u}catch(e){if(w)w.close();alert('Prílohu sa nepodarilo otvoriť.')}}
 document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="/_blob/"]');if(!a)return;e.preventDefault();e.stopPropagation();openAtt(decodeURIComponent(a.getAttribute('href').slice(7)))},true);
+
+// ---------- Outlook koncept ----------
+AUTH.mailDraft=async({subject,html,to,pdf,logo})=>{const t=await token(['Mail.ReadWrite']);
+  const att=[{'@odata.type':'#microsoft.graph.fileAttachment',name:pdf.name,contentType:'application/pdf',contentBytes:pdf.b64}];
+  if(logo)att.push({'@odata.type':'#microsoft.graph.fileAttachment',name:'lnstatik.png',contentType:'image/png',contentBytes:logo,isInline:true,contentId:'lnlogo@lnstatik'});
+  const r=await fetch(GRAPH+'/me/messages',{method:'POST',headers:{Authorization:'Bearer '+t,'Content-Type':'application/json'},
+    body:JSON.stringify({subject,body:{contentType:'HTML',content:html},toRecipients:String(to||'').split(/[,;]\s*/).filter(Boolean).map(a=>({emailAddress:{address:a}})),attachments:att})});
+  if(!r.ok){let m='';try{m=(await r.json()).error.message}catch(e){}throw new Error(m||('Outlook '+r.status))}
+  const j=await r.json();return j.webLink||'https://outlook.office.com/mail/drafts'};
 
 // ---------- sťahovanie ----------
 const downloads={save:async({filename,data})=>{const b=data instanceof Blob?data:new Blob([data],{type:'application/octet-stream'});
