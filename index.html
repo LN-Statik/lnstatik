@@ -459,10 +459,10 @@ function settings(){const s=S.items.settings||{};const b={...DEF.biz};Object.ent
   if(!b.street&&b.address){const L=String(b.address).split('\n');b.street=L[0]||'';b.city=L[1]||''}
   return {...DEF,...s,biz:b}}
 const list=k=>Object.entries(S.items).filter(([,v])=>v&&v.kind===k).map(([id,v])=>({...v,id}));
-function save(id,data){const c=JSON.parse(JSON.stringify(data));delete c.id;S.items[id]=c;render();
+function save(id,data){const c=JSON.parse(JSON.stringify(data));delete c.id;if(c.kind==='event')bandSoon();S.items[id]=c;render();
   if(!col)return Promise.resolve();
   return Q[id]=(Q[id]||Promise.resolve()).then(()=>col.doc(id).set(c)).catch(e=>toast(e&&e.code==='quota_exceeded'?'Úložisko je plné. Zmaž staré záznamy.':'Uloženie zlyhalo. Skús to znova.'))}
-function del(id){delete S.items[id];render();if(col)(Q[id]||Promise.resolve()).then(()=>col.doc(id).delete()).catch(()=>toast('Mazanie zlyhalo.'))}
+function del(id){if(S.items[id]&&S.items[id].kind==='event')bandSoon();delete S.items[id];render();if(col)(Q[id]||Promise.resolve()).then(()=>col.doc(id).delete()).catch(()=>toast('Mazanie zlyhalo.'))}
 
 async function init(){
   render();
@@ -990,6 +990,31 @@ function editClient(id){const c=id?{...S.items[id]}:{name:'',street:'',city:'',c
   $('#cf').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target);const o={...(id?S.items[id]:{}),kind:'client'};['name','street','city','country','ico','dic','icdph','email','vatNote','autoDesc'].forEach(k=>o[k]=(f.get(k)||'').trim());
     const was=!!o.autoInv;o.autoInv=!!f.get('autoInv');o.autoRate=f.get('autoRate')||'';if(o.autoInv&&!was)o.autoFrom=today().slice(0,7);save(id||('cl_'+uid()),o);closeModal();toast('Odberateľ je uložený')}}
 
+// ===== SB KALENDÁR (GitHub Pages) =====
+const GH_REPO='LN-Statik/lnstatik',GH_PATH='kalendar/index.html';
+let bandT=null;function bandSoon(){if(!(settings().ghToken))return;clearTimeout(bandT);bandT=setTimeout(()=>publishBand(false),60000)}
+const u8b64=u=>{let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)};
+async function publishBand(manual){const st=settings();const tok=st.ghToken;const msg=t=>{const e=$('#bandSt');if(e)e.textContent=t;if(manual)toast(t)};
+  if(!tok){msg('Najprv vlož GitHub kľúč a ulož nastavenia');return}
+  try{msg('Aktualizujem SB Kalendár…');
+    const F=['date','time','title','type','venue','city','fee','fuel','members','status','notes','contact','contactEmail','deposit','depositBy','depositPaid','split'];
+    const evs=list('event').map(e=>{const o={id:e.id,files:[]};F.forEach(k=>o[k]=e[k]??'');return o}).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+    const now=new Date();const payload=JSON.stringify({members:bandCfg().members,events:evs,updated:now.toLocaleDateString('sk-SK')+' '+now.toLocaleTimeString('sk-SK',{hour:'2-digit',minute:'2-digit'})});
+    const r0=await fetch('https://app.lnstatik.sk/kalendar/sablona.html',{cache:'no-store'}).catch(()=>null);const tpl=r0&&r0.ok?await r0.text():await (await fetch(`https://raw.githubusercontent.com/${GH_REPO}/main/kalendar/sablona.html`,{cache:'no-store'})).text();
+    if(!tpl.includes('/*__BLOB__*/null'))throw new Error('šablóna');
+    const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),N=250000;
+    const base=await crypto.subtle.importKey('raw',new TextEncoder().encode((st.bandUser||'simple').trim().toLowerCase()+':'+(st.bandPw||'0000SB')),'PBKDF2',false,['deriveKey']);
+    const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:N,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt']);
+    const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(payload)));
+    const html=tpl.replace('/*__BLOB__*/null',JSON.stringify({s:u8b64(salt),i:u8b64(iv),c:u8b64(ct),n:N}));
+    const H={Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'};const url=`https://api.github.com/repos/${GH_REPO}/contents/${GH_PATH}`;
+    const cur=await fetch(url+'?ref=main',{headers:H,cache:'no-store'});const sha=cur.ok?(await cur.json()).sha:undefined;
+    const r=await fetch(url,{method:'PUT',headers:{...H,'Content-Type':'application/json'},body:JSON.stringify({message:'Aktualizácia SB Kalendára',content:u8b64(new TextEncoder().encode(html)),sha,branch:'main'})});
+    if(!r.ok){let m='';try{m=(await r.json()).message}catch(e){}throw new Error(r.status===401?'neplatný GitHub kľúč':m||('GitHub '+r.status))}
+    const s2=S.items.settings||{};const c=JSON.parse(JSON.stringify({...s2,bandAt:Date.now()}));S.items.settings=c;if(col)col.doc('settings').set(c);
+    msg('SB Kalendár je aktualizovaný (zmena sa prejaví do 1–2 minút)')}
+  catch(e){console.error(e);msg('SB Kalendár sa nepodarilo aktualizovať: '+(e.message||e))}}
+
 // ===== AUTOMATICKÉ FAKTÚRY =====
 const lastDay=(y,m)=>new Date(y,m,0).getDate();
 const ymOf=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}`;
@@ -1204,6 +1229,11 @@ function vSettings(){const st=settings(),b=st.biz;
    <div class="panel"><h3>Kapela</h3>
     <div class="f"><label>Členovia kapely (oddelení čiarkou)</label><input name="bandMembers" value="${esc(bandCfg().members.join(', '))}"></div>
     <div class="f"><label>Ja som</label><input name="bandMe" value="${esc(bandCfg().me)}"></div>
+    <div style="border-top:1px solid var(--line2);margin-top:8px;padding-top:12px"><b>SB Kalendár</b> <span class="dim" style="font-size:13px">– app.lnstatik.sk/kalendar</span>
+     <div class="dim" style="font-size:13px;margin:4px 0 10px">Stránka sa aktualizuje sama asi minútu po každej zmene akcie. Potrebuje prístupový kľúč z GitHubu.</div>
+     <div class="fr"><div class="f"><label>Meno na stránke</label><input name="bandUser" value="${esc(st.bandUser||'simple')}"></div><div class="f"><label>Heslo na stránke</label><input name="bandPw" value="${esc(st.bandPw||'0000SB')}"></div></div>
+     <div class="f"><label>GitHub kľúč ${st.ghToken?'<span class="tag ok">nastavený</span>':''}</label><input name="ghToken" type="password" placeholder="${st.ghToken?'ponechať':'github_pat_…'}" autocomplete="off"></div>
+     <button type="button" class="btn sm" onclick="publishBand(true)">Aktualizovať SB Kalendár teraz</button> <span class="dim" id="bandSt" style="font-size:13px">${st.bandAt?'Naposledy '+new Date(st.bandAt).toLocaleString('sk-SK'):''}</span></div>
    </div>
    <div class="panel"><h3>Šablóna e-mailu</h3>
     <div class="f"><label>Predmet</label><input name="mailSubj" value="${esc(st.mailSubj||DEF_SUBJ)}"></div>
@@ -1223,7 +1253,7 @@ function vSettings(){const st=settings(),b=st.biz;
   </div><div style="margin-top:18px"><button class="btn p">Uložiť nastavenia</button></div></form>`}
 document.addEventListener('submit',e=>{if(e.target.id!=='sf')return;e.preventDefault();const f=new FormData(e.target);const st=settings();const biz={};
   ['name','street','city','country','ico','dic','icdph','iban','swift','contact','phone','email','reg'].forEach(k=>biz[k]=(f.get(k)||'').trim());
-  save('settings',{...st,biz,bandMembers:(f.get('bandMembers')||'').split(',').map(x=>x.trim()).filter(Boolean),bandMe:(f.get('bandMe')||'Laci').trim(),mailSubj:f.get('mailSubj')||DEF_SUBJ,mailBody:f.get('mailBody')||DEF_BODY,desc:f.get('desc')||DESC,dueDays:+f.get('dueDays')||14,prefix:(f.get('prefix')||'').trim(),rate:+f.get('rate')||0,vatPayer:!!f.get('vatPayer'),vatRate:+f.get('vatRate')||0});toast('Nastavenia sú uložené')});
+  save('settings',{...st,biz,bandUser:(f.get('bandUser')||'simple').trim(),bandPw:f.get('bandPw')||'0000SB',ghToken:(f.get('ghToken')||'').trim()||st.ghToken||'',bandMembers:(f.get('bandMembers')||'').split(',').map(x=>x.trim()).filter(Boolean),bandMe:(f.get('bandMe')||'Laci').trim(),mailSubj:f.get('mailSubj')||DEF_SUBJ,mailBody:f.get('mailBody')||DEF_BODY,desc:f.get('desc')||DESC,dueDays:+f.get('dueDays')||14,prefix:(f.get('prefix')||'').trim(),rate:+f.get('rate')||0,vatPayer:!!f.get('vatPayer'),vatRate:+f.get('vatRate')||0});toast('Nastavenia sú uložené')});
 function setImg(k,v){save('settings',{...settings(),[k]:v})}
 async function exportBackup(btn){const data={app:'LNStatik',verzia:1,vytvorene:new Date().toISOString(),items:S.items};
   try{const dl=await claude.use('downloads');if(!dl){toast('Sťahovanie tu nie je dostupné.');return}
