@@ -831,11 +831,13 @@ async function makeEml(invs,to){invs=[].concat(invs);const inv=invs[0];const m=m
     ...pdfs.flatMap(p=>[`--${B1}`,`Content-Type: application/pdf; name="${p.fn}"`,`Content-Disposition: attachment; filename="${p.fn}"`,'Content-Transfer-Encoding: base64','',wrap76(p.b64),'']),`--${B1}--`,''].join('\r\n');
   return {eml,fn:fn.replace('.pdf','.eml')}}
 async function outlookDraft(invs,to,btn){invs=[].concat(invs);const inv=invs[0];const o=btn.textContent;btn.disabled=true;btn.textContent='Pripravujem e-mail…';
-  if(window.AUTH&&AUTH.ok&&AUTH.mailDraft){const w=window.open('about:blank','_blank');
+  if(window.AUTH&&AUTH.ok&&AUTH.mailDraft){const w=null;
     try{const m=mailTextMulti(invs);const pdfs=[];for(const x of invs)pdfs.push({name:pdfName(x),b64:await pdfB64(x)});
       let logo='';try{logo=await logoPng()}catch(e){}
       const link=await AUTH.mailDraft({subject:m.subject,html:mailHtml(m),to,pdfs,logo});
-      if(w)w.location=link;else location.href=link;toast('E-mail je pripravený v Outlooku (aj v Konceptoch)')}
+      modal(`<h2>E-mail je pripravený</h2><p>Nájdeš ho v Outlooku v priečinku <b>Koncepty</b> – v aplikácii na počítači aj v telefóne, s PDF prílohou a podpisom. Otvor ho, skontroluj a klikni na <b>Odoslať</b>.</p>
+      <p class="dim" style="font-size:13px">Ak sa v Konceptoch hneď neobjaví, počkaj pár sekúnd, kým sa Outlook zosynchronizuje.</p>
+      <div class="mfoot"><a class="btn" href="${esc(link)}" target="_blank" rel="noopener">Otvoriť v Outlooku na webe</a><button class="btn p" onclick="closeModal()">OK</button></div>`)}
     catch(e){console.error(e);if(w)w.close();if(!(e&&e.redirect))toast('E-mail sa nepodarilo vytvoriť v Outlooku'+(e&&e.message?': '+e.message:''))}
     btn.disabled=false;btn.textContent=o;return}
   try{if(typeof JSZip==='undefined')throw new Error('zip');const {eml,fn}=await makeEml(invs,to);const z=new JSZip();z.file(fn,eml);
