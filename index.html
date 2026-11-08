@@ -890,7 +890,23 @@ function vFirmPick(){return `<div class="gate" style="margin:8vh auto 0"><div cl
 function pickFirm(v){v=String(v||'').trim();if(v.length<2){toast('Napíš názov firmy');return}const k=fkey(v);
   const known=[...clientNames(),...list('time').map(e=>e.client||e.project)].filter(Boolean).find(n=>fkey(n)===k||fkey(n).startsWith(k)&&k.length>=3);
   S.firm={key:known?fkey(known):k,name:known||v};S.tClient=S.firm.name;render()}
-function vTime(){
+function vTimeAll(){const st=settings(),run=st.running;const nm=e=>e.client||e.project||'Bez odberateľa';
+  const all=list('time').sort((a,b)=>b.start-a.start);const y=S.year;const now=new Date();const mo=new Date(now.getFullYear(),now.getMonth(),1).getTime();
+  const firms={};all.forEach(e=>{const k=fkey(nm(e));const f=firms[k]||(firms[k]={name:nm(e),key:k,mo:0,yr:0,unb:0,all:0,last:0});const d=e.end-e.start;
+    if(clientNames().some(c=>fkey(c)===k))f.name=clientNames().find(c=>fkey(c)===k);
+    f.all+=d;if(new Date(e.start).getFullYear()===y)f.yr+=d;if(e.start>=mo)f.mo+=d;if(!e.invoiceId)f.unb+=d;f.last=Math.max(f.last,e.start)});
+  const fl=Object.values(firms).sort((a,b)=>b.last-a.last);const sel=S.tFirm&&firms[S.tFirm]?S.tFirm:'';
+  const yrE=all.filter(e=>new Date(e.start).getFullYear()===y&&(!sel||fkey(nm(e))===sel));
+  const short=n=>n.replace(/,? (a\.s\.|s\.r\.o\.)$/,'');
+  return `<div class="head"><div><h1>Čas</h1><p class="lead">Prehľad odpracovaných hodín podľa firiem. Stopky sú v časti Odpracované hodiny na úvodnej stránke.</p></div><div style="display:flex;gap:12px;align-items:center">${yearSel()}<button class="btn" onclick="editTime()">Pridať záznam</button></div></div>
+  ${run?`<div class="note" style="display:flex;justify-content:space-between;align-items:center;gap:12px">Stopky bežia: <b>${esc(run.client)}</b> od ${new Date(run.start).toLocaleTimeString('sk-SK',{hour:'2-digit',minute:'2-digit'})}<button class="btn sm" onclick="stopTimer()">Zastaviť</button></div>`:''}
+  <div class="panel" style="margin-bottom:22px"><h3>Podľa firiem</h3>${fl.length?`<table><thead><tr><th>Firma</th><th class="r">Tento mesiac</th><th class="r">Rok ${y}</th><th class="r">Nevyfakturované</th><th></th></tr></thead><tbody>
+   ${fl.map(f=>`<tr class="click" onclick="S.tFirm=S.tFirm==='${esc(f.key)}'?'':'${esc(f.key)}';render()" style="${sel===f.key?'background:var(--paper)':''}"><td class="b">${esc(short(f.name))}</td><td class="r">${fh(f.mo)}</td><td class="r">${fh(f.yr)}</td><td class="r ${f.unb?'b':'dim'}">${f.unb?fh(f.unb):'—'}</td><td class="r">${f.unb?`<button class="btn sm" onclick="event.stopPropagation();invoiceFromTime(this.dataset.c)" data-c="${esc(nm(all.find(e=>fkey(nm(e))===f.key&&!e.invoiceId)))}">Vyfakturovať</button>`:''}</td></tr>`).join('')}
+   </tbody></table>`:'<div class="empty"><p>Zatiaľ žiadne záznamy.</p></div>'}</div>
+  <div class="panel"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:6px"><h3 style="margin:0">Záznamy ${y}${sel?' – '+esc(short(firms[sel].name)):''}</h3>${sel?`<button class="btn q sm" onclick="S.tFirm='';render()">Zobraziť všetky firmy</button>`:''}</div>
+   ${yrE.length?`<table><thead><tr><th>Dátum</th><th>Firma</th><th>Popis</th><th class="r">Trvanie</th></tr></thead><tbody>${yrE.map(e=>`<tr class="click" onclick="editTime('${e.id}')"><td>${new Date(e.start).toLocaleDateString('sk-SK')} <span class="dim">${new Date(e.start).toLocaleTimeString('sk-SK',{hour:'2-digit',minute:'2-digit'})}–${new Date(e.end).toLocaleTimeString('sk-SK',{hour:'2-digit',minute:'2-digit'})}</span></td><td>${esc(short(nm(e)))}</td><td>${esc(e.note||'')} ${e.invoiceId?`<span class="tag ok">vo faktúre ${esc((S.items[e.invoiceId]||{}).number||'')}</span>`:''}</td><td class="r b">${dur(e.end-e.start).slice(0,5)}</td></tr>`).join('')}
+   <tr><td colspan="3" class="b">Spolu</td><td class="r b">${fh(yrE.reduce((s,e)=>s+(e.end-e.start),0))}</td></tr></tbody></table>`:'<div class="empty"><p>V tomto roku žiadne záznamy.</p></div>'}</div>`}
+function vTime(){if(S.mode!=='time')return vTimeAll();
   const st=settings();const F=S.mode==='time'?S.firm:null;const runAll=st.running;const run=runAll&&(!F||fkey(runAll.client)===F.key)?runAll:null;const other=runAll&&!run;const names=clientNames();
   if(F)S.tClient=F.name;else if(!S.tCustom&&!names.includes(S.tClient))S.tClient=names[0]||'';
   const prevCustom=[...new Set(list('time').map(e=>e.client||e.project).filter(c=>c&&!names.includes(c)))];
@@ -940,7 +956,7 @@ function editTime(id){if(id&&S.mode==='time'&&S.firm&&fkey((S.items[id]||{}).cli
 function periodNote(ents){const ms=[...new Set(ents.map(e=>{const d=new Date(e.start);return d.getFullYear()*100+d.getMonth()+1}))].sort();if(!ms.length)return'';
   const f=x=>pad(x%100),y=x=>Math.floor(x/100);const a=ms[0],b=ms[ms.length-1];
   if(a===b)return `za obdobie ${f(a)}/${y(a)}`;if(y(a)===y(b))return `za obdobie ${f(a)}-${f(b)}/${y(b)}`;return `za obdobie ${f(a)}/${y(a)} ~ ${f(b)}/${y(b)}`}
-function invoiceFromTime(cname){const st=settings();const ents=list('time').filter(e=>!e.invoiceId&&(e.client||'Bez odberateľa')===cname).sort((a,b)=>a.start-b.start);
+function invoiceFromTime(cname){const st=settings();const ents=list('time').filter(e=>!e.invoiceId&&fkey(e.client||e.project||'Bez odberateľa')===fkey(cname)).sort((a,b)=>a.start-b.start);
   const tot=ents.reduce((s,e)=>s+(e.end-e.start),0);
   modal(`<h2>Vyfakturovať čas: ${esc(cname)}</h2>
   <div style="max-height:260px;overflow:auto;margin-bottom:14px"><table><tbody>${ents.map(e=>`<tr><td><label class="chk"><input type="checkbox" class="te" value="${e.id}" checked> ${new Date(e.start).toLocaleDateString('sk-SK')} ${esc(e.note)}</label></td><td class="r">${fh(e.end-e.start)}</td></tr>`).join('')}</tbody></table></div>

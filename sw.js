@@ -1,5 +1,5 @@
 // LNStatik – offline cache aplikácie (dáta sa necachujú, sú v OneDrive)
-const C='lns-02fb30e9';
+const C='lns-22a25123';
 const SHELL=['./','index.html','config.js','manifest.webmanifest','vendor/msal-browser.min.js','icons/icon-192.png','icons/icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
