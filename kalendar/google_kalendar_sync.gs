@@ -49,15 +49,24 @@ function synchronizovat() {
     videne[u.uid] = true;
     const podpis = [u.title, u.start.getTime(), u.end.getTime(), u.allDay, u.location, u.desc].join('|');
     let e = existujuce[u.uid];
-    if (e && e.getTag('sig') === podpis) return;
+    if (e && e.getTag('sig') === podpis) { farba_(e, u); return; }
     if (e) e.deleteEvent();
     e = u.allDay ? cal.createAllDayEvent(u.title, u.start, u.end, { location: u.location, description: u.desc })
                  : cal.createEvent(u.title, u.start, u.end, { location: u.location, description: u.desc });
     e.setTag('uid', u.uid); e.setTag('sig', podpis);
     e.removeAllReminders();
     if (!/^ZRUŠENÉ/.test(u.title)) e.addPopupReminder(24 * 60);
+    farba_(e, u);
   });
   Object.keys(existujuce).forEach(uid => { if (!videne[uid]) existujuce[uid].deleteEvent(); });
+}
+
+// zelená = potvrdené / odohrané / zaplatené, hnedá (šedá – Google nemá hnedú) = zrušené
+function farba_(e, u) {
+  let c = null;
+  if (/^ZRUŠENÉ/.test(u.title) || /Stav:\s*Zrušené/i.test(u.desc)) c = CalendarApp.EventColor.GRAY;
+  else if (/Stav:\s*(Potvrdené|Odohrané|Zaplatené)/i.test(u.desc)) c = CalendarApp.EventColor.GREEN;
+  try { if (c && e.getColor() !== c) e.setColor(c); } catch (x) {}
 }
 
 function parseIcs_(txt) {
@@ -102,7 +111,7 @@ function datum_(v, allDay) {
 // ---------- Dovolenky ----------
 function dovKalendar_() {
   const c = CalendarApp.getCalendarsByName(DOVOLENKY);
-  return c.length ? c[0] : CalendarApp.createCalendar(DOVOLENKY, { timeZone: ZONA, color: CalendarApp.Color.GREEN });
+  return c.length ? c[0] : CalendarApp.createCalendar(DOVOLENKY, { timeZone: ZONA, color: CalendarApp.Color.RED });
 }
 function json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
 function den_(d) { return Utilities.formatDate(d, ZONA, 'yyyy-MM-dd'); }
@@ -111,6 +120,7 @@ function zoznam_() {
   const od = new Date(); od.setDate(od.getDate() - 60);
   const po = new Date(); po.setDate(po.getDate() + 550);
   return dovKalendar_().getEvents(od, po).map(e => {
+    try { if (e.getColor() !== CalendarApp.EventColor.RED) e.setColor(CalendarApp.EventColor.RED); } catch (x) {}
     const t = e.getTitle(); const kto = t.split(/\s[–-]\s/)[0].trim();
     const s = e.getAllDayStartDate ? (e.isAllDayEvent() ? e.getAllDayStartDate() : e.getStartTime()) : e.getStartTime();
     let k = e.isAllDayEvent() ? e.getAllDayEndDate() : e.getEndTime();
@@ -128,7 +138,7 @@ function doPost(e) {
   const cal = dovKalendar_();
   if (d.akcia === 'pridat' && d.kto && d.od && d.do) {
     const k = zoDna_(d.do); k.setDate(k.getDate() + 1);
-    cal.createAllDayEvent(String(d.kto).slice(0, 40) + ' – dovolenka', zoDna_(d.od), k);
+    cal.createAllDayEvent(String(d.kto).slice(0, 40) + ' – dovolenka', zoDna_(d.od), k).setColor(CalendarApp.EventColor.RED);
   } else if (d.akcia === 'zmazat' && d.id) {
     const ev = cal.getEventById(d.id); if (ev) ev.deleteEvent();
   }
