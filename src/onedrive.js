@@ -23,7 +23,7 @@ AUTH.logout=()=>msal.logoutRedirect({account});
 
 async function token(sc){sc=sc||SCOPES;
   try{return (await msal.acquireTokenSilent({scopes:sc,account})).accessToken}
-  catch(e){if(sc!==SCOPES){return (await msal.acquireTokenPopup({scopes:sc,account})).accessToken}await msal.acquireTokenRedirect({scopes:sc,account});throw e}}
+  catch(e){if(sc!==SCOPES){try{sessionStorage.setItem('lns_after_consent','1')}catch(x){}await msal.acquireTokenRedirect({scopes:sc,account});const er=new Error('Presmerovanie na povolenie Outlooku');er.redirect=true;throw er}await msal.acquireTokenRedirect({scopes:sc,account});throw e}}
 async function g(path,opt={}){
   const t=await token();
   return fetch(path.startsWith('http')?path:GRAPH+path,{...opt,headers:{Authorization:'Bearer '+t,...(opt.headers||{})}})}
@@ -113,6 +113,7 @@ async function start(){
   AUTH.ready=true;
   if(!account){if(window.render)render();return}
   AUTH.ok=true;AUTH.user=account.username||'';if(window.render)render();
+  try{if(sessionStorage.getItem('lns_after_consent')){sessionStorage.removeItem('lns_after_consent');setTimeout(()=>{try{toast('Outlook je povolený. Otvor faktúru a klikni znova na Otvoriť v Outlooku.')}catch(x){}},1500)}}catch(x){}
   try{await findBase();state=await pull();loaded=true;readyRes()}catch(e){console.error(e);AUTH.err='Nepodarilo sa načítať dáta z OneDrive.';readyRej(e)}
 }
 const started=start();

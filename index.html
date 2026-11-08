@@ -276,7 +276,7 @@ AUTH.logout=()=>msal.logoutRedirect({account});
 
 async function token(sc){sc=sc||SCOPES;
   try{return (await msal.acquireTokenSilent({scopes:sc,account})).accessToken}
-  catch(e){if(sc!==SCOPES){return (await msal.acquireTokenPopup({scopes:sc,account})).accessToken}await msal.acquireTokenRedirect({scopes:sc,account});throw e}}
+  catch(e){if(sc!==SCOPES){try{sessionStorage.setItem('lns_after_consent','1')}catch(x){}await msal.acquireTokenRedirect({scopes:sc,account});const er=new Error('Presmerovanie na povolenie Outlooku');er.redirect=true;throw er}await msal.acquireTokenRedirect({scopes:sc,account});throw e}}
 async function g(path,opt={}){
   const t=await token();
   return fetch(path.startsWith('http')?path:GRAPH+path,{...opt,headers:{Authorization:'Bearer '+t,...(opt.headers||{})}})}
@@ -366,6 +366,7 @@ async function start(){
   AUTH.ready=true;
   if(!account){if(window.render)render();return}
   AUTH.ok=true;AUTH.user=account.username||'';if(window.render)render();
+  try{if(sessionStorage.getItem('lns_after_consent')){sessionStorage.removeItem('lns_after_consent');setTimeout(()=>{try{toast('Outlook je povolený. Otvor faktúru a klikni znova na Otvoriť v Outlooku.')}catch(x){}},1500)}}catch(x){}
   try{await findBase();state=await pull();loaded=true;readyRes()}catch(e){console.error(e);AUTH.err='Nepodarilo sa načítať dáta z OneDrive.';readyRej(e)}
 }
 const started=start();
@@ -835,7 +836,7 @@ async function outlookDraft(invs,to,btn){invs=[].concat(invs);const inv=invs[0];
       let logo='';try{logo=await logoPng()}catch(e){}
       const link=await AUTH.mailDraft({subject:m.subject,html:mailHtml(m),to,pdfs,logo});
       if(w)w.location=link;else location.href=link;toast('E-mail je pripravený v Outlooku (aj v Konceptoch)')}
-    catch(e){console.error(e);if(w)w.close();toast('E-mail sa nepodarilo vytvoriť v Outlooku'+(e&&e.message?': '+e.message:''))}
+    catch(e){console.error(e);if(w)w.close();if(!(e&&e.redirect))toast('E-mail sa nepodarilo vytvoriť v Outlooku'+(e&&e.message?': '+e.message:''))}
     btn.disabled=false;btn.textContent=o;return}
   try{if(typeof JSZip==='undefined')throw new Error('zip');const {eml,fn}=await makeEml(invs,to);const z=new JSZip();z.file(fn,eml);
     const blob=await z.generateAsync({type:'blob'});const dl=await claude.use('downloads');
