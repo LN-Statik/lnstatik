@@ -320,6 +320,8 @@ const enc=p=>p.split('/').map(encodeURIComponent).join('/');
 
 let msal=null,account=null;
 const AUTH={ok:false,ready:false,err:'',user:''};
+const REM=(()=>{try{let r=localStorage.getItem('lns_remember');if(r===null){r=Object.keys(localStorage).some(k=>k.includes(CFG.clientId||'~'))?'1':'0';localStorage.setItem('lns_remember',r)}return r==='1'}catch(e){return false}})();
+AUTH.remember=REM;
 window.AUTH=AUTH;
 
 AUTH.loginHTML=function(){
@@ -327,10 +329,11 @@ AUTH.loginHTML=function(){
   return `<div class="gate"><div class="lg">${(typeof sig!=='undefined'?sig(15,'#8B929B','#1F2328'):'')}</div>
    <div class="day" style="font-size:26px">Prihlásenie</div><div class="dt" style="text-transform:none">Dáta sú uložené v tvojom OneDrive.</div>
    ${AUTH.err?`<p style="color:var(--bad);font-size:14px">${AUTH.err}</p>`:''}
+   <label style="display:flex;align-items:center;gap:8px;justify-content:center;margin:4px 0 12px;font-size:14px;color:var(--ink2);cursor:pointer"><input type="checkbox" id="remIn" ${REM?'checked':''} style="width:auto;margin:0"> Zapamätať prihlásenie na tomto zariadení</label>
    <button class="gb" onclick="AUTH.login()"><span>Prihlásiť sa cez Microsoft<small>Konto LN-Statika</small></span><span class="ar">›</span></button>
    <a class="gb" href="/kalendar/" style="text-decoration:none;color:inherit"><span>SB Kalendár<small>Kapela – akcie a dovolenky</small></span><span class="ar">›</span></a></div>`};
-AUTH.login=()=>msal.loginRedirect({scopes:SCOPES,prompt:'select_account'});
-AUTH.logout=()=>msal.logoutRedirect({account});
+AUTH.login=()=>{const r=!!(document.getElementById('remIn')||{}).checked;try{localStorage.setItem('lns_remember',r?'1':'0');if(r!==REM){sessionStorage.setItem('lns_autologin','1');location.reload();return}}catch(e){}msal.loginRedirect({scopes:SCOPES,prompt:r?'select_account':'login'})};
+AUTH.logout=()=>{try{Object.keys(localStorage).filter(k=>k.startsWith('msal.')||k.includes(CFG.clientId)).forEach(k=>localStorage.removeItem(k));sessionStorage.clear()}catch(e){}msal.logoutRedirect({account})};
 
 async function token(sc){sc=sc||SCOPES;
   try{return (await msal.acquireTokenSilent({scopes:sc,account})).accessToken}
@@ -456,12 +459,12 @@ const downloads={save:async({filename,data})=>{const b=data instanceof Blob?data
 let readyRes,readyRej;const ready=new Promise((a,b)=>{readyRes=a;readyRej=b});
 async function start(){
   if(!CFG.clientId||!window.msal){AUTH.ready=true;return}
-  msal=new window.msal.PublicClientApplication({auth:{clientId:CFG.clientId,authority:'https://login.microsoftonline.com/'+(CFG.tenantId||'organizations'),redirectUri:location.origin+location.pathname},cache:{cacheLocation:'localStorage'}});
+  msal=new window.msal.PublicClientApplication({auth:{clientId:CFG.clientId,authority:'https://login.microsoftonline.com/'+(CFG.tenantId||'organizations'),redirectUri:location.origin+location.pathname},cache:{cacheLocation:REM?'localStorage':'sessionStorage'}});
   await msal.initialize();
   try{const r=await msal.handleRedirectPromise();if(r&&r.account)account=r.account}catch(e){AUTH.err='Prihlásenie zlyhalo: '+(e.errorMessage||e.message||e)}
   account=account||msal.getAllAccounts()[0]||null;
   AUTH.ready=true;
-  if(!account){if(window.render)render();return}
+  if(!account){try{if(sessionStorage.getItem('lns_autologin')){sessionStorage.removeItem('lns_autologin');msal.loginRedirect({scopes:SCOPES,prompt:REM?'select_account':'login'});return}}catch(x){}if(window.render)render();return}
   AUTH.ok=true;AUTH.user=account.username||'';if(window.render)render();
   try{if(sessionStorage.getItem('lns_after_consent')){sessionStorage.removeItem('lns_after_consent');setTimeout(()=>{try{toast('Outlook je povolený. Otvor faktúru a klikni znova na Otvoriť v Outlooku.')}catch(x){}},1500)}}catch(x){}
   try{await findBase();state=await pull();loaded=true;readyRes()}catch(e){console.error(e);AUTH.err='Nepodarilo sa načítať dáta z OneDrive.';readyRej(e)}
@@ -503,6 +506,7 @@ window.claude={use:async k=>{await started;if(!AUTH.ok)return null;
     <div id="mini"></div>
     <div class="save" id="status">Načítavam…</div>
     <button class="lockbtn" id="lockBtn" onclick="lockApp()">Zamknúť admin</button>
+    <button class="lockbtn" style="margin-top:6px;opacity:.75" onclick="if(window.AUTH&&AUTH.logout)AUTH.logout()">Odhlásiť sa</button>
   </aside>
   <main id="main"></main>
 </div>
