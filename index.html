@@ -107,11 +107,11 @@ tbody tr.click:hover td{background:#F7F8F7}
 .a4 .dt{color:#868D96;font-size:10px;margin:2px 0 6px}.a4 .tt{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;font-weight:700;border-bottom:1.5px solid #1F2328;padding-bottom:3px;margin-bottom:6px}.a4 .tt span{font-size:11px}
 .a4 .xh{font-weight:700;font-size:12.5px;margin:12px 0 3px;text-align:left}.a4 .x{display:grid;grid-template-columns:1fr 190px 120px 42px;align-items:center;gap:6px;min-height:19px;border-bottom:1px solid #F1F3F4;text-align:left}.a4 .x .xs{text-align:right;color:#4E555D}.a4 .x .xv{font-variant-numeric:tabular-nums;text-align:left}.a4 .x .xu{color:#4E555D}
 .a4 .x.dim{color:#B5BAC0}.a4 .x.dim .xs,.a4 .x.dim .xu{color:#C9CED3}.a4 .x.dim .iv{color:#B5BAC0}
-.a4 .xn{font-style:italic;color:#6E7781;font-size:10.5px;margin:3px 0;text-align:left}.a4 .im{display:block;width:100%;margin:4px 0}.a4 .im svg,.a4 .ims svg{width:100%;height:auto;display:block}.a4 .ims{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0}
+.a4 .xn{font-style:italic;color:#6E7781;font-size:10.5px;margin:3px 0;text-align:left}.a4 .isof{width:44%;margin:2px auto 6px}.a4 .isof svg{width:100%;height:auto;display:block}.a4 .im{display:block;width:100%;margin:4px 0}.a4 .im svg,.a4 .ims svg{width:100%;height:auto;display:block}.a4 .ims{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0}
 .a4 .iv{font:inherit;font-weight:700;background:#EEF4FB;border:1px solid #CFDDED;border-radius:3px;padding:1px 5px;width:100%;box-sizing:border-box;color:#1F2328;height:19px}.a4 b.iv{background:none;border:0;padding:0}.a4 .iv.t{width:150px}
 .a4 .okv{color:#1E6B43}.a4 .nov{color:#B42318}.a4 .tb{width:100%;border-collapse:collapse;font-size:10.5px;margin:4px 0}.a4 .tb th,.a4 .tb td{border:1px solid #DFE2E4;padding:2px 5px;text-align:left}.a4 .tb th{background:#F4F5F6}
 .a4 .x.tot{font-weight:700;font-size:12.5px;border-top:1.5px solid #1F2328;border-bottom:1.5px solid #1F2328;margin-top:4px}.a4 .nv{font-weight:700;margin:6px 0 4px}.a4 .ft{margin-top:16px;color:#AEB4BA;font-size:9.5px;text-align:right}
-#main{min-width:0}.dbhead{display:grid;grid-template-columns:minmax(0,720px) 1fr;gap:20px;margin-bottom:14px;align-items:start}.dbf svg{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--line);border-radius:10px}.dbtwo{display:grid;grid-template-columns:1fr 1fr;gap:8px}.dbleg{font-size:13px;line-height:1.55}.dbleg b{font-weight:600}.dbinfo{background:#FAFAF9;border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.7}.dbhead.wide{grid-template-columns:1fr}.dbhead.wide .dbleg{columns:2;column-gap:28px}@media(max-width:1100px){.dbhead{grid-template-columns:1fr}}.dbt{border-collapse:collapse;min-width:100%}.dbt th{font-size:12px;text-align:left;padding:4px 6px;white-space:nowrap}.dbt td{padding:2px 3px}.dbt input{width:62px;min-width:0;padding:5px 6px;font-size:13.5px}.dbt td:first-child input{width:130px}
+#main{min-width:0}.dbhead{display:grid;grid-template-columns:minmax(0,720px) 1fr;gap:20px;margin-bottom:14px;align-items:start}.dbf svg{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--line);border-radius:10px}.dbtwo{display:grid;grid-template-columns:1fr 1fr;gap:8px}.dbtwo.three{grid-template-columns:1fr 1fr 1fr}.dbleg{font-size:13px;line-height:1.55}.dbleg b{font-weight:600}.dbinfo{background:#FAFAF9;border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.7}.dbhead.wide{grid-template-columns:1fr}.dbhead.wide .dbleg{columns:2;column-gap:28px}@media(max-width:1100px){.dbhead{grid-template-columns:1fr}}.dbt{border-collapse:collapse;min-width:100%}.dbt th{font-size:12px;text-align:left;padding:4px 6px;white-space:nowrap}.dbt td{padding:2px 3px}.dbt input{width:62px;min-width:0;padding:5px 6px;font-size:13.5px}.dbt td:first-child input{width:130px}
 .ctl{display:grid;grid-template-columns:minmax(300px,440px) 1fr;gap:16px;align-items:start}.ctl>*{min-width:0}.ctl form h3{margin:14px 0 8px}.ctl form h3:first-child{margin-top:0}
 @media(max-width:1000px){.ctl{grid-template-columns:minmax(0,1fr)}}
 .seg{display:inline-flex;background:var(--line2);border-radius:7px;padding:3px;gap:2px;flex-wrap:wrap}
@@ -833,6 +833,43 @@ function figExc(){const p='fe';const bx=40,bw=90,top=40,bh=230,face=bx+bw,pl=4,u
  ${dimH(face,jx+(ls-g)/2,by+58,'e',null,by+4)}
  ${fgCap(210,322,'e = t + g + l<tspan font-size="8" dy="2">b</tspan><tspan dy="-2">/2,   l</tspan><tspan font-size="8" dy="2">b</tspan><tspan dy="-2"> = l</tspan><tspan font-size="8" dy="2">s</tspan><tspan dy="-2"> − g</tspan>')}</svg>`}
 function fgMetal(p){return `<linearGradient id="${p}m" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#C4CAD0"/><stop offset="0.45" stop-color="#E6E9EC"/><stop offset="1" stop-color="#B7BEC5"/></linearGradient><linearGradient id="${p}mv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DDE1E5"/><stop offset="1" stop-color="#AEB5BC"/></linearGradient><radialGradient id="${p}nh" cx="0.4" cy="0.35" r="0.7"><stop offset="0" stop-color="#9AA1A8"/><stop offset="1" stop-color="#3A4046"/></radialGradient>`}
+function figIso(){const p='fi',s=1.25,C=Math.cos(Math.PI/6),Sn=0.5,ox=0,oy=0;const BB=[1e9,1e9,-1e9,-1e9];
+ const P=(x,y,z)=>{const q=[ox+(x-y)*C*s,oy+(x+y)*Sn*s-z*s];BB[0]=Math.min(BB[0],q[0]);BB[1]=Math.min(BB[1],q[1]);BB[2]=Math.max(BB[2],q[0]);BB[3]=Math.max(BB[3],q[1]);return q};const pts=a=>a.map(q=>P(...q).map(v=>v.toFixed(1)).join(',')).join(' ');
+ const poly=(a,f,st,w,op)=>`<polygon points="${pts(a)}" fill="${f}" stroke="${st||'none'}" stroke-width="${w||1}" stroke-linejoin="round"${op!=null?` fill-opacity="${op}"`:''}/>`;
+ const circ=(fn,n=18)=>{const a=[];for(let i=0;i<n;i++){const t=i/n*2*Math.PI;a.push(fn(Math.cos(t),Math.sin(t)))}return a};
+ const holeY=(x0,z0,r)=>poly(circ((c,sn)=>[x0+r*c,0.2,z0+r*sn]),'#FFFFFF','#59616A',0.9);
+ const holeX=(x,y0,z0,r)=>poly(circ((c,sn)=>[x+0.2,y0+r*c,z0+r*sn]),'#FFFFFF','#59616A',0.9);
+ const bw=60,BL=-150,BR=130,bz=150,jw=24,jz0=40,jz1=128,ls=56,hz1=130,fl=34,t=2;
+ const wood='#F8E7CF',woodS='#EFD5B0',woodT='#F4DDBB',ws='#C9A57A';
+ let g='';
+ // hlavný nosník
+ g+=poly([[BL,-bw,bz],[BR,-bw,bz],[BR,0,bz],[BL,0,bz]],woodT,ws,1.1);
+ g+=poly([[BL,0,0],[BR,0,0],[BR,0,bz],[BL,0,bz]],wood,ws,1.1);
+ g+=poly([[BR,-bw,0],[BR,0,0],[BR,0,bz],[BR,-bw,bz]],woodS,ws,1.1);
+ for(let i=1;i<6;i++){const z=bz*i/6;g+=`<polyline points="${pts([[BL+6,0,z],[BR-6,0,z+2]])}" fill="none" stroke="#E6CBA5" stroke-width="0.7"/>`}
+ // ľavá bočnica (za trámom) a sedlo
+ const wall=x=>[[x,0,jz0],[x,ls,jz0],[x,ls,jz0+30],[x,12,hz1],[x,0,hz1]];
+ g+=poly(wall(-jw-t),'#D3D8DD','#59616A',1);
+ g+=poly([[-jw-t,0,jz0],[jw+t,0,jz0],[jw+t,ls,jz0],[-jw-t,ls,jz0]],'#C3C9CF','#59616A',1);
+ // trám (priesvitný)
+ const L=190;g+=poly([[-jw,0,jz1],[jw,0,jz1],[jw,L,jz1],[-jw,L,jz1]],woodT,ws,1,0.78);
+ g+=poly([[jw,0,jz0],[jw,L,jz0],[jw,L,jz1],[jw,0,jz1]],wood,ws,1,0.78);
+ g+=poly([[-jw,L,jz0],[jw,L,jz0],[jw,L,jz1],[-jw,L,jz1]],woodS,ws,1,0.9);
+ for(let i=1;i<5;i++){const z=jz0+(jz1-jz0)*i/5;g+=`<polyline points="${pts([[jw,ls+8,z],[jw,L-6,z+1.5]])}" fill="none" stroke="#E6CBA5" stroke-width="0.7"/>`}
+ // pravá bočnica, krídla
+ g+=poly(wall(jw+t),'url(#'+p+'mt)','#4E555D',1.1);
+ [[22,95],[36,70],[22,62]].forEach(([y,z])=>g+=holeX(jw+t,y,z,2.6));
+ const flange=(x0,x1)=>poly([[x0,0.1,jz0],[x1,0.1,jz0],[x1,0.1,hz1],[x0,0.1,hz1]],'url(#'+p+'mf)','#4E555D',1.1);
+ g+=flange(-jw-t-fl,-jw-t);g+=flange(jw+t,jw+t+fl);
+ [-jw-t-fl+10,-jw-t-fl+24,jw+t+10,jw+t+24].forEach(x=>[52,70,88,106,122].forEach((z,i)=>{if(!((x<0&&x>-jw-t-fl+20)&&i===2))g+=holeY(x,z,2.7)}));
+ g+=holeY(-jw-t-fl+17,88,5.2);
+ // hrany ohybu
+ g+=`<polyline points="${pts([[jw+t,0,jz0],[jw+t,0,hz1]])}" stroke="#8E959C" stroke-width="0.8" fill="none"/><polyline points="${pts([[-jw-t,0,jz0],[-jw-t,0,hz1]])}" stroke="#8E959C" stroke-width="0.8" fill="none"/>`;
+ const lab=(q,dx,dy,t,a)=>{const [x,y]=P(...q);return `<line x1="${x}" y1="${y}" x2="${x+dx}" y2="${y+dy}" stroke="${FG.dim}" stroke-width="0.6"/><circle cx="${x}" cy="${y}" r="1.6" fill="${FG.dim}"/><text x="${x+dx+(a==='end'?-3:3)}" y="${y+dy+4}" text-anchor="${a||'start'}" font-size="11" fill="${FG.ink}">${t}</text>`};
+ g+=lab([-110,0,110],-30,-40,'hlavný nosník','end')+lab([jw,170,90],40,-20,'trám')+lab([jw+t+fl-4,0,60],40,30,'strmeň (krídlo)')+lab([jw+t,40,50],50,40,'bočnica');
+ const vb=[BB[0]-20,BB[1]-34,BB[2]-BB[0]+40,BB[3]-BB[1]+50].map(v=>v.toFixed(0)).join(' ');return `<svg viewBox="${vb}" class="fig" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="${p}mf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F1F3F5"/><stop offset="1" stop-color="#C5CBD1"/></linearGradient><linearGradient id="${p}mt" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#E4E7EA"/><stop offset="1" stop-color="#B9C0C7"/></linearGradient></defs>
+ <text x="${(BB[0]-10).toFixed(0)}" y="${(BB[1]-16).toFixed(0)}" font-size="10.5" fill="${FG.dim}">Trámový strmeň – axonometria</text>${g}</svg>`}
+
 function figHoles(){const p='fh';const X0=70,FW=50,JX=126,JW=84,T=4,Y0=70,YB=240,JY=96;
  const rows=[86,111,136,161,186,211],used=[0,2,3,5];
  const flange=(x,left)=>{const x2=x+FW;return `<path d="M${left?x+6:x} ${Y0} L${left?x2:x2-6} ${Y0} ${left?'':`Q${x2} ${Y0} ${x2} ${Y0+6}`} L${x2} ${YB-6} Q${x2} ${YB} ${x2-6} ${YB} L${x+6} ${YB} Q${x} ${YB} ${x} ${YB-6} L${x} ${Y0+6} ${left?`Q${x} ${Y0} ${x+6} ${Y0}`:''} Z" fill="url(#${p}m)" stroke="${FG.ink}" stroke-width="1.1"/>`+
@@ -899,7 +936,7 @@ function strmenDoc(I,R,P,pdf){const sv=R.sv,obo=R.obo,c=R.c;const D=cdb();
  ${H('Výber strmeňa – 3 najvhodnejšie z databázy')}${note('Prepočítajú sa všetky strmene z databázy. Zobrazia sa prvé 3 vyhovujúce v poradí databázy.')}
  <table class="tb"><tr><th>alt.</th><th>Strmeň</th><th>b × H</th><th>otvory</th><th>min. ks</th><th>η spoje</th><th>η tlak ⊥</th><th>η rozšt.</th><th>η výrobca</th></tr>${top3}</table>
  ${row('Zvolená alternatíva (1 = najmenší vyhovujúci)','',inp('alt','sel',[1,2,3]))}${row('Zvolený strmeň','',`<b>${esc(c.h.n)}</b>`)}
- ${H('Zvolený strmeň')}
+ ${H('Zvolený strmeň')}<div class="isof">${figIso()}</div>
  ${row('Vnútorná šírka strmeňa','b =',f2(c.h.b,0),'mm')}${row('Výška strmeňa','H =',f2(c.H,0),'mm')}${row('Hrúbka plechu','t =',f2(c.t,1),'mm')}${row('Hĺbka sedla','l<sub>s</sub> =',f2(c.h.ls,0),'mm')}
  ${row('Počet zvislých radov na jednom krídle (svorník: 1)','k =',c.k)}${row('Počet otvorov v zvislom rade (svorník: radov svorníkov)','m<sub>max</sub> =',c.mmax)}
  ${row('Spodný otvor od spodnej hrany strmeňa','a<sub>b</sub> =',f2(c.ab,0),'mm')}${row('Horný otvor od hornej hrany strmeňa','a<sub>t</sub> =',f2(c.at,0),'mm')}${row('Vodorovný rozostup zvislých radov','a<sub>1</sub> =',f2(c.h.a1,0),'mm')}
@@ -985,7 +1022,7 @@ const DBDESC={
  bcls:{n:'Pevnostná trieda, napr. 4.6',fub:'medza pevnosti v ťahu fub = prvé číslo × 100'},
  hang:{n:'Názov strmeňa',b:'vnútorná šírka strmeňa b (= šírka trámu ± 2 mm)',H:'výška krídla strmeňa H',t:'hrúbka plechu t',ls:'hĺbka sedla ls (dĺžka uloženia trámu)',k:'počet zvislých radov otvorov na jednom krídle',m:'počet otvorov v jednom zvislom rade',ab:'spodný otvor od spodnej hrany strmeňa ab',at:'horný otvor od hornej hrany strmeňa at',a1:'vodorovný rozostup zvislých radov a1',msv:'počet svorníkov po výške (1 rad = pár, jeden v každom krídle)',absv:'spodný svorník od spodnej hrany',atsv:'horný svorník od hornej hrany',Rd:'návrhová únosnosť podľa výrobcu (0 = nezadané, nekontroluje sa)'}};
 const DBFIG={
-hang:`<div class="dbtwo">${figHoles()}${figExc()}</div>
+hang:`<div class="dbtwo three">${figIso()}${figHoles()}${figExc()}</div>
 <p class="dim" style="font-size:12.5px;margin:4px 0 0">Svorníkové stĺpce (rady sv., ab sv., at sv.) platia, keď sa vo výpočte zvolí svorník: v každom krídle je jeden zvislý rad svorníkov, „rady sv.“ = počet svorníkov po výške.</p>`,
 nail:`<svg viewBox="0 0 560 120" class="dbfig" font-size="12"><defs><marker id="ar2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#4E555D"/></marker></defs>
  <rect x="60" y="38" width="8" height="34" rx="2" fill="#4E555D"/><rect x="68" y="49" width="330" height="12" fill="#8B929B"/>${Array.from({length:20},(_,i)=>`<line x1="${110+i*14}" y1="49" x2="${116+i*14}" y2="61" stroke="#6E7781"/>`).join('')}<path d="M398 49 L418 55 L398 61z" fill="#8B929B"/>
