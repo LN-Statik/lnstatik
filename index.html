@@ -292,7 +292,8 @@ body.m-start #gate{display:flex}body.m-start .app{display:none}
 .gate .gb:hover{border-color:var(--ink3)}.gate .gb small{display:block;font-weight:400;font-size:13px;color:var(--ink3)}
 .gate .gb .ar{color:var(--ink3);font-size:20px}.gate .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2E7D4F;margin-left:8px;vertical-align:middle}
 .gate .pin{display:flex;gap:8px;margin-top:4px}.gate .pin input{flex:1;text-align:center;font-size:20px;letter-spacing:.4em}
-body.m-time aside{display:none}body.m-time .app{grid-template-columns:1fr}body.m-time main{max-width:980px;margin:0 auto}body.m-time.m-wide main{max-width:1240px}.wbar{gap:18px}.wtabs{display:flex;gap:4px;background:#E8E9E6;border-radius:12px;padding:4px;margin-right:auto;margin-left:14px}.wtabs button{border:0;background:none;padding:8px 18px;border-radius:9px;font:inherit;font-size:14.5px;font-weight:600;color:#59616B;cursor:pointer;display:inline-flex;align-items:center;gap:7px}.wtabs button.on{background:#fff;color:#1F2328;box-shadow:0 1px 2px rgba(0,0,0,.08)}#nav button[data-w]{color:#9AA0A8}
+.wgrid{display:grid;grid-template-columns:250px minmax(0,1fr);gap:18px;align-items:start}@media(max-width:800px){.wgrid{grid-template-columns:1fr}}.wside{padding:12px;position:sticky;top:12px}.wside input{width:100%;box-sizing:border-box;margin-bottom:8px}.wside .wgh{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3,#868D96);font-weight:700;margin:12px 6px 4px}.wside button{display:block;width:100%;text-align:left;border:0;background:none;padding:6px 8px;border-radius:7px;font:inherit;font-size:14px;cursor:pointer;color:var(--ink)}.wside button.on,.wside button:hover{background:var(--paper,#F2F3F1)}.wph{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid var(--line2);padding-bottom:10px;margin-bottom:8px}.wph h1{margin:2px 0 0;font-size:26px}.wcat{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3,#868D96);font-weight:700}.wbody{font-size:15px;line-height:1.6}.wbody h2{font-size:19px;margin:18px 0 6px}.wbody h3{font-size:16px;margin:14px 0 4px}.wbody h4{font-size:14.5px;margin:12px 0 4px}.wbody p{margin:6px 0}.wbody code{background:#F1F2F0;padding:1px 5px;border-radius:4px}.wtb{border-collapse:collapse;margin:8px 0}.wtb td{border:1px solid var(--line);padding:5px 10px}.wtb tr:first-child td{font-weight:600;background:#F7F8F7}.wedh{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:10px}.wed textarea{width:100%;box-sizing:border-box;min-height:420px;font:14px/1.55 ui-monospace,Menlo,monospace}.whelp{font-size:12px;color:var(--ink3,#868D96);margin:6px 0 10px}
+#admNav{display:none}body.adm #admNav{display:block}#lockBtn{display:none}body.adm #lockBtn{display:block}body.adm #admBtn{display:none}#admNav small{display:block}body.m-time aside{display:none}body.m-time .app{grid-template-columns:1fr}body.m-time main{max-width:980px;margin:0 auto}body.m-time.m-wide main{max-width:1240px}.wbar{gap:18px}.wtabs{display:flex;gap:4px;background:#E8E9E6;border-radius:12px;padding:4px;margin-right:auto;margin-left:14px}.wtabs button{border:0;background:none;padding:8px 18px;border-radius:9px;font:inherit;font-size:14.5px;font-weight:600;color:#59616B;cursor:pointer;display:inline-flex;align-items:center;gap:7px}.wtabs button.on{background:#fff;color:#1F2328;box-shadow:0 1px 2px rgba(0,0,0,.08)}#nav button[data-w]{color:#9AA0A8}
 .tbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}
 .lockbtn{background:none;border:1px solid var(--side2);color:var(--sideink);border-radius:6px;padding:7px 10px;font:inherit;font-size:13px;cursor:pointer;margin-top:8px}.lockbtn:hover{color:#fff}
 .fold summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center}.fold summary::-webkit-details-marker{display:none}.fold .chev{color:var(--ink3);font-size:20px;transition:transform .15s}.fold[open] .chev{transform:rotate(90deg)}
@@ -480,8 +481,15 @@ window.claude={use:async k=>{await started;if(!AUTH.ok)return null;
   <aside>
     <div class="brand" id="brand"></div>
     <nav id="nav">
+      <button data-v="uvod">Úvod</button>
+      <button data-v="projekty">Projekty</button>
+      <button data-v="vypocty">Výpočty</button>
+      <button data-v="wiki">Wiki</button>
+      <div class="sep"></div>
+      <button data-v="admin" id="admBtn">Admin</button>
+      <div id="admNav">
+      <small>Admin</small>
       <button data-v="prehlad">Prehľad</button>
-      <small>Firma</small>
       <button data-v="faktury">Faktúry</button>
       <button data-v="cas">Čas</button>
       <button data-v="odberatelia">Odberatelia</button>
@@ -489,13 +497,12 @@ window.claude={use:async k=>{await started;if(!AUTH.ok)return null;
       <small>Kapela</small>
       <button data-v="kapela">Akcie</button>
       <button data-v="kalendar">Kalendár</button>
-      <div class="sep"></div>
       <button data-v="nastavenia">Nastavenia</button>
-      <button data-w="1" onclick="toWork('projekty')">Pracovňa ›</button>
+      </div>
     </nav>
     <div id="mini"></div>
     <div class="save" id="status">Načítavam…</div>
-    <button class="lockbtn" onclick="lockApp()">Zamknúť</button>
+    <button class="lockbtn" id="lockBtn" onclick="lockApp()">Zamknúť admin</button>
   </aside>
   <main id="main"></main>
 </div>
@@ -539,9 +546,9 @@ const DESC='Vypracovanie dokumentácie a projektu jednoduchých stavieb';
 const IMPORT={biz:{},clients:[],invoices:[]};
 
 // ===== state / storage =====
-const WORK=['cas','projekty','vypocty'];const WORKN={cas:'Čas',projekty:'Projekty',vypocty:'Výpočty'};
-const VIEWS=['prehlad','faktury','cas','odberatelia','vydavky','kapela','kalendar','nastavenia'];
-const S={items:{},view:VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'prehlad',year:new Date().getFullYear(),invF:'all',evF:'year',timeF:'month',mode:'start'};
+const ADMV=['prehlad','faktury','cas','odberatelia','vydavky','kapela','kalendar','nastavenia'];
+const VIEWS=['uvod','projekty','vypocty','wiki','prehlad','faktury','cas','odberatelia','vydavky','kapela','kalendar','nastavenia'];
+const S={items:{},view:'uvod',admin:false,year:new Date().getFullYear(),invF:'all',evF:'year',timeF:'month',mode:'start'};
 let col=null;const Q={};
 const DEF={kind:'settings',biz:{...IMPORT.biz},vatPayer:false,vatRate:23,rate:25,dueDays:14,prefix:'',desc:DESC,sign:'',logo:'',running:null,pin:''};
 function settings(){const s=S.items.settings||{};const b={...DEF.biz};Object.entries(s.biz||{}).forEach(([k,v])=>{if(v)b[k]=v});
@@ -578,17 +585,17 @@ function drawGate(){const now=new Date();const run=settings().running;const g=$(
    :`<button class="gb" onclick="enterFull()"><span>Admin<small>prehľady, financie, firma</small></span><span class="ar">›</span></button>`}
    ${window.AUTH&&AUTH.ok?'<p style="margin-top:26px"><button class="btn q sm" onclick="AUTH.logout()">Odhlásiť sa</button></p>':''}
   </div>`;if(ask)setTimeout(()=>{const i=$('#pinIn');if(i)i.focus()},30)}
-setInterval(()=>{if(S.mode==='start'&&!S.gatePin)drawGate()},30000);
-function enterFull(){if(settings().pin){S.gatePin=true;drawGate();return}openFull();if(false){setTimeout(()=>modal(`<h2>Nastaviť PIN?</h2><p class="dim">Keď si appku otvoríš u niekoho iného, bez PIN-u sa do firmy nedostane. Odpracované hodiny ostanú bez PIN-u.</p>
+
+function enterFull(){if(S.admin){go('prehlad');return}if(settings().pin){modal(`<h2>Admin</h2><p class="dim">Zadaj PIN pre prehľady, financie a nastavenia.</p><form class="pin" style="margin:14px 0 4px" onsubmit="event.preventDefault();tryPin()"><input id="pinIn" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN" aria-label="PIN"><button class="btn p">Odomknúť</button></form>`);setTimeout(()=>{const i=$('#pinIn');if(i)i.focus()},40);return}openFull();if(false){setTimeout(()=>modal(`<h2>Nastaviť PIN?</h2><p class="dim">Keď si appku otvoríš u niekoho iného, bez PIN-u sa do firmy nedostane. Odpracované hodiny ostanú bez PIN-u.</p>
    <div class="f"><label>Nový PIN (4 až 8 číslic)</label><input id="np" type="password" inputmode="numeric" autocomplete="new-password"></div>
    <div class="mfoot"><div></div><div style="display:flex;gap:8px"><button class="btn" onclick="closeModal()">Neskôr</button><button class="btn p" onclick="setPin($('#np').value)">Uložiť PIN</button></div></div>`),300)}}
-function openFull(){S.mode='full';S.gatePin=false;S.lastAct=Date.now();render();window.scrollTo(0,0)}
+function openFull(){closeModal();S.admin=true;S.lastAct=Date.now();go('prehlad')}
 async function tryPin(){const v=($('#pinIn')||{}).value||'';if(await pinHash(v)===settings().pin)openFull();else{toast('Nesprávny PIN');const i=$('#pinIn');if(i){i.value='';i.focus()}}}
 async function setPin(v){v=String(v||'').trim();if(v&&!/^\d{4,8}$/.test(v)){toast('PIN musí mať 4 až 8 číslic');return}
   await save('settings',{...settings(),pin:v?await pinHash(v):''});closeModal();toast(v?'PIN je nastavený':'PIN je zrušený')}
-function lockApp(){closeModal();S.mode='start';S.firm=null;S.gatePin=false;render();window.scrollTo(0,0)}
+function lockApp(){closeModal();S.admin=false;if(ADMV.includes(S.view))S.view='uvod';render();window.scrollTo(0,0)}
 ['pointerdown','keydown'].forEach(t=>document.addEventListener(t,()=>{S.lastAct=Date.now()},true));
-setInterval(()=>{if(S.mode==='full'&&Date.now()-(S.lastAct||0)>15*60e3)lockApp()},30000);
+setInterval(()=>{if(S.admin&&Date.now()-(S.lastAct||0)>15*60e3)lockApp()},30000);
 
 // ---------- výpočty: drevo podľa STN EN 1995-1-1 (odporúčané hodnoty) ----------
 const MAT={
@@ -1253,22 +1260,21 @@ function pOpenCalc(id,i){const c=(S.items[id].calcs||[])[i];if(!c)return;S.calcP
 
 // ===== nav =====
 $('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(b){if(b.dataset.v==='projekty')S.proj=null;if(b.dataset.v==='vypocty')S.calc=null;go(b.dataset.v)}});
-function toWork(v){S.mode='time';S.wview=v||S.wview||'cas';if(v==='projekty')S.proj=null;if(v==='vypocty')S.calc=null;S.gatePin=false;render();window.scrollTo(0,0);try{history.replaceState(null,'','#'+S.wview)}catch(e){}}
-function go(v){if(['projekty','vypocty'].includes(v)){S.mode='time';S.wview=v;try{history.replaceState(null,'','#'+v)}catch(e){}render();window.scrollTo(0,0);return}if(S.mode==='time'&&v==='cas'){S.wview='cas';render();window.scrollTo(0,0);return}S.view=v;try{history.replaceState(null,'','#'+v)}catch(e){}render();window.scrollTo(0,0)}
-window.addEventListener('hashchange',()=>{const v=location.hash.slice(1);if(S.mode==='full'&&VIEWS.includes(v)){S.view=v;render()}else if(S.mode==='time'&&WORK.includes(v)&&S.wview!==v){S.wview=v;render()}});
+function toWork(v){go(v||'uvod')}
+function go(v){if(v==='admin'){enterFull();return}if(ADMV.includes(v)&&!S.admin){enterFull();return}S.view=v;try{history.replaceState(null,'','#'+v)}catch(e){}render();window.scrollTo(0,0)}
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(b){if(b.dataset.v==='projekty')S.proj=null;if(b.dataset.v==='vypocty')S.calc=null;if(b.dataset.v==='wiki')S.wikiEdit=null;go(b.dataset.v)}});
+window.addEventListener('hashchange',()=>{const v=location.hash.slice(1);if(VIEWS.includes(v)&&v!==S.view&&(S.admin||!ADMV.includes(v))){S.view=v;render()}});
 function render(){
-  document.body.classList.toggle('m-start',S.mode==='start');document.body.classList.toggle('m-time',S.mode==='time');
-  if(S.mode==='start'){drawGate();return}
-  if(S.mode==='time'){const W=S.wview||'cas';const run=settings().running;document.body.classList.toggle('m-wide',W!=='cas');
-    $('#main').innerHTML=`<div class="tbar wbar">${sig(13,'#8B929B','#1F2328')}<nav class="wtabs">${WORK.map(v=>`<button class="${v===W?'on':''}" onclick="toWork('${v}')">${WORKN[v]}${v==='cas'&&run?'<span class="dot" title="Stopky bežia"></span>':''}</button>`).join('')}</nav><button class="btn q" onclick="lockApp()">Späť na úvod</button></div>`+(W==='projekty'?vProjects():W==='vypocty'?vCalcs():(S.firm?vTime():vFirmPick()));
-    if(W==='cas'&&!S.firm)setTimeout(()=>{const i=$('#firmIn');if(i)i.focus()},30);return}
-  document.body.classList.remove('m-wide');if(WORK.includes(S.view)&&S.view!=='cas')S.view='prehlad';
+  const authed=!window.AUTH||AUTH.ok;S.mode=authed?'app':'start';
+  document.body.classList.toggle('m-start',!authed);document.body.classList.remove('m-time','m-wide');document.body.classList.toggle('adm',!!S.admin);
+  if(!authed){drawGate();return}
+  if(ADMV.includes(S.view)&&!S.admin)S.view='uvod';if(!VIEWS.includes(S.view))S.view='uvod';
   drawBrand();
-  document.querySelectorAll('#nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===S.view));
+  document.querySelectorAll('#nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===S.view||b.dataset.v==='admin'&&S.admin&&!ADMV.includes(S.view)&&false));
   const r=settings().running;
-  $('#mini').innerHTML=r?`<div class="mini" onclick="go('cas')"><div class="c" id="miniClock">${dur(Date.now()-r.start)}</div><div class="s">${esc(r.client||'')}${r.note?' – '+esc(r.note):''}</div></div>`:'';
+  $('#mini').innerHTML=r&&S.view!=='uvod'?`<div class="mini" onclick="go('uvod')"><div class="c" id="miniClock">${dur(Date.now()-r.start)}</div><div class="s">${esc(r.client||'')}${r.note?' – '+esc(r.note):''}</div></div>`:'';
   const off=S.offline?`<div class="note">Dáta sa nepodarilo načítať z OneDrive. Skontroluj pripojenie a obnov stránku.</div>`:'';
-  $('#main').innerHTML=off+({prehlad:vOverview,projekty:vProjects,vypocty:vCalcs,faktury:vInvoices,cas:vTime,odberatelia:vClients,vydavky:vExpenses,kapela:vBand,kalendar:vCal,nastavenia:vSettings})[S.view]();
+  $('#main').innerHTML=off+({uvod:vTime,wiki:vWiki,prehlad:vOverview,projekty:vProjects,vypocty:vCalcs,faktury:vInvoices,cas:vTime,odberatelia:vClients,vydavky:vExpenses,kapela:vBand,kalendar:vCal,nastavenia:vSettings})[S.view]();
   if(S.view==='prehlad')bindChart();
 }
 setInterval(()=>{const r=settings().running;if(!r)return;const t=dur(Date.now()-r.start);const a=$('#miniClock');if(a)a.textContent=t;const b=$('#clock');if(b)b.textContent=t},1000);
@@ -1751,7 +1757,7 @@ let dovAt=0;
 async function dovApi(body){const st=settings();if(!st.dovUrl)return null;
   const r=body?await fetch(st.dovUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...body,k:st.dovKey||''})}):await fetch(st.dovUrl+(st.dovUrl.includes('?')?'&':'?')+'k='+encodeURIComponent(st.dovKey||''),{cache:'no-store'});
   const j=await r.json();if(j.chyba)throw new Error(j.chyba==='kľúč'?'nesprávny kľúč':j.chyba);S.dov=j.dovolenky||[];dovAt=Date.now();return S.dov}
-async function loadDov(force){if(!settings().dovUrl)return [];if(!force&&S.dov&&Date.now()-dovAt<300000)return S.dov;try{await dovApi();if(['kalendar'].includes(S.view)&&S.mode==='full')render()}catch(e){console.warn(e)}return S.dov||[]}
+async function loadDov(force){if(!settings().dovUrl)return [];if(!force&&S.dov&&Date.now()-dovAt<300000)return S.dov;try{await dovApi();if(['kalendar'].includes(S.view)&&S.admin)render()}catch(e){console.warn(e)}return S.dov||[]}
 const dovOn=d=>(S.dov||[]).filter(x=>d&&x.od<=d&&d<=x.do);
 function vCal(){const st=settings();if(!S.calM){const n=new Date();S.calM=new Date(n.getFullYear(),n.getMonth(),1)}const M=S.calM;if(!S.dov&&st.dovUrl)loadDov();
   const MN=['január','február','marec','apríl','máj','jún','júl','august','september','október','november','december'];
@@ -1896,6 +1902,34 @@ function autoBox(){const pend=list('invoice').filter(i=>i.src&&i.src.auto&&i.sta
 // ===== TIME =====
 function clientNames(){return list('client').map(c=>c.name).sort()}
 const fkey=n=>String(n||'').trim().split(/\s+/)[0].toLowerCase().replace(/[,.]$/,'');
+// ===== súkromná wiki =====
+function wkMd(t){const e=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/(^|\s)\*(.+?)\*(?=\s|$)/g,'$1<i>$2</i>').replace(/`(.+?)`/g,'<code>$1</code>').replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+ const L=String(t||'').split('\n');let o='',ul=0,tb=0;const close=()=>{if(ul){o+='</ul>';ul=0}if(tb){o+='</tbody></table>';tb=0}};
+ L.forEach(l=>{let m;if(m=l.match(/^(#{1,3})\s+(.*)/)){close();o+=`<h${m[1].length+1}>${e(m[2])}</h${m[1].length+1}>`}
+  else if(m=l.match(/^\s*[-•]\s+(.*)/)){if(tb){o+='</tbody></table>';tb=0}if(!ul){o+='<ul>';ul=1}o+=`<li>${e(m[1])}</li>`}
+  else if(/^\s*\|.*\|\s*$/.test(l)){if(/^\s*\|[\s:|-]+\|\s*$/.test(l))return;if(ul){o+='</ul>';ul=0}const c=l.trim().slice(1,-1).split('|');if(!tb){o+='<table class="wtb"><tbody>';tb=1}o+=`<tr>${c.map(x=>`<td>${e(x.trim())}</td>`).join('')}</tr>`}
+  else if(!l.trim()){close()}else{close();o+=`<p>${e(l)}</p>`}});close();return o}
+function vWiki(){const all=list('wiki').sort((a,b)=>(a.cat||'').localeCompare(b.cat||'','sk')||(a.title||'').localeCompare(b.title||'','sk'));
+ const q=(S.wq||'').toLowerCase();const sh=q?all.filter(p=>((p.title||'')+' '+(p.cat||'')+' '+(p.body||'')).toLowerCase().includes(q)):all;
+ const cats={};sh.forEach(p=>(cats[p.cat||'Nezaradené']=cats[p.cat||'Nezaradené']||[]).push(p));
+ const cur=S.wp&&S.items[S.wp]?{...S.items[S.wp],id:S.wp}:null;
+ let right;
+ if(S.wikiEdit){const p=S.wikiEdit==='new'?{title:'',cat:S.wcat||'',body:''}:{...S.items[S.wikiEdit]};const cl=[...new Set(all.map(x=>x.cat).filter(Boolean))];
+  right=`<div class="panel wed"><div class="wedh"><input id="wt" placeholder="Názov stránky" value="${esc(p.title)}"><input id="wc" list="wcl" placeholder="Kapitola" value="${esc(p.cat||'')}"><datalist id="wcl">${cl.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div>
+   <textarea id="wb" placeholder="# Nadpis&#10;Text odseku…&#10;- odrážka&#10;| tabuľka | hodnota |">${esc(p.body||'')}</textarea>
+   <div class="whelp"># nadpis · - odrážka · **tučné** · | stĺpec | stĺpec | · [odkaz](https://…)</div>
+   <div class="mfoot"><div>${S.wikiEdit!=='new'?`<button class="btn q" onclick="wkDel('${S.wikiEdit}')">Zmazať</button>`:''}</div><div style="display:flex;gap:8px"><button class="btn" onclick="S.wikiEdit=null;render()">Zrušiť</button><button class="btn p" onclick="wkSave()">Uložiť</button></div></div></div>`}
+ else if(cur)right=`<article class="panel wpage"><div class="wph"><div><div class="wcat">${esc(cur.cat||'Nezaradené')}</div><h1>${esc(cur.title)}</h1></div><button class="btn" onclick="S.wikiEdit='${cur.id}';render()">Upraviť</button></div><div class="wbody">${wkMd(cur.body)}</div><div class="dim" style="font-size:12px;margin-top:18px">Upravené ${cur.upd?new Date(cur.upd).toLocaleDateString('sk-SK'):''}</div></article>`;
+ else right=`<div class="panel"><div class="empty"><p>${all.length?'Vyber stránku vľavo alebo vyhľadaj.':'Zatiaľ prázdne. Sem si zapisuj veci, ktoré stále hľadáš – súčinitele, postupy, kontakty na výrobcov, poznámky k normám.'}</p><button class="btn p" onclick="S.wikiEdit='new';render()">Nová stránka</button></div></div>`;
+ return `<div class="head"><div><h1>Wiki</h1><p class="lead">Súkromné poznámky a know-how.</p></div><button class="btn p" onclick="S.wikiEdit='new';render()">Nová stránka</button></div>
+ <div class="wgrid"><div class="panel wside"><input placeholder="Hľadať…" value="${esc(S.wq||'')}" oninput="S.wq=this.value;clearTimeout(window._wq);window._wq=setTimeout(()=>{render();const i=document.querySelector('.wside input');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},250)">
+  ${Object.entries(cats).map(([c,ps])=>`<div class="wgh">${esc(c)}</div>${ps.map(p=>`<button class="${p.id===S.wp?'on':''}" onclick="S.wp='${p.id}';S.wikiEdit=null;render()">${esc(p.title||'Bez názvu')}</button>`).join('')}`).join('')||'<div class="dim" style="padding:8px 4px">Nič sa nenašlo.</div>'}</div><div>${right}</div></div>`}
+function wkSave(){const t=$('#wt').value.trim();if(!t){toast('Zadaj názov');return}const id=S.wikiEdit==='new'?'wk_'+uid():S.wikiEdit;
+ const o={...(S.items[id]||{}),kind:'wiki',title:t,cat:$('#wc').value.trim(),body:$('#wb').value,upd:Date.now()};S.wikiEdit=null;S.wp=id;save(id,o);toast('Uložené')}
+function wkDel(id){if(!confirm('Zmazať stránku?'))return;S.wikiEdit=null;S.wp=null;del(id)}
+function selFirm(v){if(!v){S.firm=null;render();return}S.firm={key:fkey(v),name:v};S.tClient=v;render()}
+function homeCards(){const P=(typeof pList==='function'?pList():[]).filter(x=>!['zamietnuta','fakturovana','odovzdana'].includes(x.status)).sort((a,b)=>String(b.no).localeCompare(String(a.no))).slice(0,6);
+ return `<div class="panel"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px"><h3 style="margin:0">Rozpracované projekty</h3><button class="btn q sm" onclick="go('projekty')">Všetky projekty ›</button></div>${P.length?`<table><tbody>${P.map(p=>`<tr class="click" onclick="S.proj='${p.id}';go('projekty')"><td class="b">${esc(p.no)}</td><td>${esc(p.title||'')}</td><td class="dim">${esc(p.client||'')}</td></tr>`).join('')}</tbody></table>`:'<div class="empty"><p>Zatiaľ žiadne rozpracované projekty.</p></div>'}</div>`}
 function vFirmPick(){return `<div class="gate" style="margin:8vh auto 0"><div class="day" style="font-size:28px">Odpracované hodiny</div><div class="dt" style="text-transform:none">Napíš, pre koho dnes robíš.</div>
   <form class="pin" onsubmit="event.preventDefault();pickFirm($('#firmIn').value)"><input id="firmIn" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Firma" aria-label="Firma" style="letter-spacing:0;font-size:18px"><button class="btn p">Ďalej</button></form></div>`}
 function pickFirm(v){v=String(v||'').trim();if(v.length<2){toast('Napíš názov firmy');return}const k=fkey(v);
@@ -1917,8 +1951,11 @@ function vTimeAll(){const st=settings(),run=st.running;const nm=e=>e.client||e.p
   <div class="panel"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:6px"><h3 style="margin:0">Záznamy ${y}${sel?' – '+esc(short(firms[sel].name)):''}</h3>${sel?`<button class="btn q sm" onclick="S.tFirm='';render()">Zobraziť všetky firmy</button>`:''}</div>
    ${yrE.length?`<table><thead><tr><th>Dátum</th><th>Firma</th><th>Popis</th><th class="r">Trvanie</th></tr></thead><tbody>${yrE.map(e=>`<tr class="click" onclick="editTime('${e.id}')"><td>${new Date(e.start).toLocaleDateString('sk-SK')} <span class="dim">${new Date(e.start).toLocaleTimeString('sk-SK',{hour:'2-digit',minute:'2-digit'})}–${new Date(e.end).toLocaleTimeString('sk-SK',{hour:'2-digit',minute:'2-digit'})}</span></td><td>${esc(short(nm(e)))}</td><td>${esc(e.note||'')} ${e.invoiceId?`<span class="tag ok">vo faktúre ${esc((S.items[e.invoiceId]||{}).number||'')}</span>`:''}</td><td class="r b">${dur(e.end-e.start).slice(0,5)}</td></tr>`).join('')}
    <tr><td colspan="3" class="b">Spolu</td><td class="r b">${fh(yrE.reduce((s,e)=>s+(e.end-e.start),0))}</td></tr></tbody></table>`:'<div class="empty"><p>V tomto roku žiadne záznamy.</p></div>'}</div>`}
-function vTime(){if(S.mode!=='time')return vTimeAll();
-  const st=settings();const F=S.mode==='time'?S.firm:null;const runAll=st.running;const run=runAll&&(!F||fkey(runAll.client)===F.key)?runAll:null;const other=runAll&&!run;const names=clientNames();
+function vTime(){if(S.view!=='uvod')return vTimeAll();
+  const st=settings();const F=S.firm||null;const FL=clientNames();const now0=new Date();
+  const hd=`<div class="head"><div><h1>Úvod</h1><p class="lead">${(s=>s[0].toUpperCase()+s.slice(1))(now0.toLocaleDateString('sk-SK',{weekday:'long',day:'numeric',month:'long',year:'numeric'}))}</p></div><div style="display:flex;gap:10px;align-items:center"><select id="firmSel" style="min-width:230px;font-size:15px;font-weight:600" onchange="selFirm(this.value)"><option value="">— vyber firmu —</option>${FL.map(n=>`<option ${F&&fkey(n)===F.key?'selected':''}>${esc(n)}</option>`).join('')}</select>${F?'<button class="btn" onclick="editTime()">Pridať čas ručne</button>':''}</div></div>`;
+  if(!F){const r0=st.running;return hd+`<div class="panel" style="margin-bottom:22px"><div class="timer"><div class="clock ${r0?'run':''}" ${r0?'id="clock"':''}>${r0?dur(Date.now()-r0.start):'00:00:00'}</div><div>${r0?`<div class="b" style="font-size:18px">${esc(r0.client)}</div><div class="dim">${esc(r0.note||'Bez popisu')}</div>`:'<div class="dim" style="font-size:15px">Vyber firmu hore a spusti časomer.</div>'}</div>${r0?'<button class="go stop" onclick="stopTimer()" aria-label="Zastaviť">■</button>':''}</div></div>`+homeCards()}
+const runAll=st.running;const run=runAll&&(!F||fkey(runAll.client)===F.key)?runAll:null;const other=runAll&&!run;const names=clientNames();
   if(F)S.tClient=F.name;else if(!S.tCustom&&!names.includes(S.tClient))S.tClient=names[0]||'';
   const prevCustom=[...new Set(list('time').map(e=>e.client||e.project).filter(c=>c&&!names.includes(c)))];
   const all=list('time').filter(e=>!F||fkey(e.client||e.project)===F.key).sort((a,b)=>b.start-a.start);
@@ -1928,7 +1965,7 @@ function vTime(){if(S.mode!=='time')return vTimeAll();
   const shown=S.timeF==='week'?all.filter(e=>e.start>=wk):S.timeF==='month'?all.filter(e=>e.start>=mo):S.timeF==='unbilled'?unb:all;
   const byC={};if(!F)unb.forEach(e=>{const k=e.client||e.project||'Bez odberateľa';byC[k]=(byC[k]||0)+(e.end-e.start)});
   const custom=!!S.tCustom;
-  return `<div class="head"><div><h1>${F?esc(F.name.replace(/,? (a\.s\.|s\.r\.o\.)$/,'')):'Čas'}</h1><p class="lead">${F?'Odpracované hodiny':'Stopuj prácu na projektoch a potom ju vyfakturuj.'}</p></div><button class="btn" onclick="editTime()">Pridať čas ručne</button></div>
+  return hd+`
   <div class="panel" style="margin-bottom:22px">
     <div class="timer">
       <div class="clock ${run?'run':''}" ${other?'':'id="clock"'}>${run?dur(Date.now()-run.start):'00:00:00'}</div>
@@ -1944,7 +1981,7 @@ function vTime(){if(S.mode!=='time')return vTimeAll();
     <div class="fig"><div class="v">${fh(sum(all.filter(e=>e.start>=mo)))}</div><div class="k">Tento mesiac</div></div>
     <div class="fig"><div class="v">${fh(sum(unb))}</div><div class="k">Nevyfakturované</div></div>
   </div>
-  ${Object.keys(byC).length?`<div class="panel" style="margin-bottom:22px"><h3>Nevyfakturovaný čas podľa odberateľa</h3><table><tbody>${Object.entries(byC).map(([k,ms])=>`<tr><td class="b">${esc(k)}</td><td class="r">${fh(ms)}</td><td class="r">${S.mode==='time'?'':`<button class="btn sm" onclick="invoiceFromTime(this.dataset.c)" data-c="${esc(k)}">Vyfakturovať</button>`}</td></tr>`).join('')}</tbody></table></div>`:''}
+  ${Object.keys(byC).length?`<div class="panel" style="margin-bottom:22px"><h3>Nevyfakturovaný čas podľa odberateľa</h3><table><tbody>${Object.entries(byC).map(([k,ms])=>`<tr><td class="b">${esc(k)}</td><td class="r">${fh(ms)}</td><td class="r">${S.view==='uvod'?'':`<button class="btn sm" onclick="invoiceFromTime(this.dataset.c)" data-c="${esc(k)}">Vyfakturovať</button>`}</td></tr>`).join('')}</tbody></table></div>`:''}
   <div class="panel">
     <div class="seg" style="margin-bottom:12px">${[['week','Týždeň'],['month','Mesiac'],['unbilled','Nevyfakturované'],['all','Všetko']].map(([k,l])=>`<button class="${S.timeF===k?'on':''}" onclick="S.timeF='${k}';render()">${l}</button>`).join('')}</div>
     ${shown.length?`<table><thead><tr><th>Dátum</th>${F?'':'<th>Odberateľ</th>'}<th>Popis</th><th class="r">Trvanie</th></tr></thead><tbody>
@@ -1956,10 +1993,10 @@ function startTimer(){const client=(S.tClient||'').trim();if(!client){toast('Vyb
 function stopTimer(){const st=settings(),r=st.running;if(!r)return;const end=Date.now();
   if(end-r.start>=30000){save('te_'+uid(),{kind:'time',start:r.start,end,client:r.client,note:r.note});toast('Čas je uložený: '+dur(end-r.start).slice(0,5))}else toast('Kratšie ako 30 sekúnd, neuložené');
   save('settings',{...st,running:null})}
-function editTime(id){if(id&&S.mode==='time'&&S.firm&&fkey((S.items[id]||{}).client||(S.items[id]||{}).project)!==S.firm.key)return;const names=clientNames();const now=Date.now();const e=id?{...S.items[id]}:{start:now-36e5,end:now,client:S.tClient||names[0]||'',note:''};
+function editTime(id){if(id&&S.view==='uvod'&&S.firm&&fkey((S.items[id]||{}).client||(S.items[id]||{}).project)!==S.firm.key)return;const names=clientNames();const now=Date.now();const e=id?{...S.items[id]}:{start:now-36e5,end:now,client:S.tClient||names[0]||'',note:''};
   modal(`<h2>${id?'Upraviť čas':'Pridať čas ručne'}</h2><form id="tf">
   <div class="fr"><div class="f"><label>Začiatok</label><input type="datetime-local" name="start" value="${loc(e.start)}" required></div><div class="f"><label>Koniec</label><input type="datetime-local" name="end" value="${loc(e.end)}" required></div></div>
-  ${S.mode==='time'?`<input type="hidden" name="client" value="${esc(S.firm?S.firm.name:'')}">`:`<div class="f"><label>Odberateľ</label><input name="client" list="cn" value="${esc(e.client||e.project||'')}"><datalist id="cn">${names.map(n=>`<option value="${esc(n)}">`).join('')}</datalist></div>`}
+  ${S.view==='uvod'&&S.firm?`<input type="hidden" name="client" value="${esc(S.firm?S.firm.name:'')}">`:`<div class="f"><label>Odberateľ</label><input name="client" list="cn" value="${esc(e.client||e.project||'')}"><datalist id="cn">${names.map(n=>`<option value="${esc(n)}">`).join('')}</datalist></div>`}
   <div class="f"><label>Popis</label><input name="note" value="${esc(e.note)}"></div>
   <div class="mfoot"><div>${id?`<button type="button" class="btn q bad" onclick="if(sure(this,'Naozaj zmazať?')){del('${id}');closeModal()}">Zmazať</button>`:''}</div><div style="display:flex;gap:8px"><button type="button" class="btn" onclick="closeModal()">Zrušiť</button><button class="btn p">Uložiť</button></div></div></form>`);
   $('#tf').onsubmit=ev=>{ev.preventDefault();const f=new FormData(ev.target);const s=new Date(f.get('start')).getTime(),en=new Date(f.get('end')).getTime();
