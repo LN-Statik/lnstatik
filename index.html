@@ -124,6 +124,17 @@ tbody tr.click:hover td{background:#F7F8F7}
 .ubar{display:block;height:7px;background:var(--line2);border-radius:7px;overflow:hidden}.ubar i{display:block;height:7px;border-radius:7px;background:#2E7D4F}.ubar.no i{background:#B42318}.okv{color:#1E6B43}.nov{color:#B42318}
 .sst{border-bottom:1px solid var(--line2)}.sst summary{display:grid;grid-template-columns:1fr 160px 64px;gap:10px;align-items:center;padding:9px 2px;cursor:pointer;list-style:none;font-weight:600;font-size:14px}.sst summary::-webkit-details-marker{display:none}.sst summary b{text-align:right}.sst summary>b:only-of-type{grid-column:3}
 .fx{width:100%;border-collapse:collapse;margin:2px 0 10px}.fx td{padding:5px 6px;border-bottom:1px solid var(--line2);vertical-align:top;font-size:13px}.fx .fl{color:var(--ink3,#868D96);width:30%}.fx .ff{font-family:'Cambria Math',Cambria,'Times New Roman',serif;font-size:14px}.fx .fv{text-align:right;font-weight:700;white-space:nowrap}.fx .fu{color:var(--ink3,#868D96);width:40px}
+.ctop.sticky{position:sticky;top:0;z-index:5;background:var(--paper,#F2F3F1);padding:10px 0;margin:-10px 0 8px}
+.blks{display:flex;flex-direction:column;gap:14px;max-width:1100px}.blk2{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.blk2>header{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line2)}.blk2 .bn{width:28px;height:28px;border-radius:50%;background:#1F2328;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none}.blk2 h3{margin:0;font-size:16.5px;flex:1}.blk2 .bst{display:flex;align-items:center;gap:10px;min-width:200px;justify-content:flex-end}.blk2 .bst .ubar{width:120px}
+.bbody{padding:14px 18px}.bbody.hasfig{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:22px;align-items:start}.bfig svg{width:100%;height:auto;display:block}@media(max-width:900px){.bbody.hasfig{grid-template-columns:1fr}.bfig{max-width:420px}}
+.bin{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px 14px;margin-bottom:12px}.bf{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--ink2);min-width:0}.bf.w{grid-column:1/-1}.bf.dis{opacity:.4}.bf>span>i{font-style:normal;color:var(--ink3,#868D96)}
+.bf input,.bf select{font-size:14.5px;padding:7px 9px;width:100%;box-sizing:border-box;background:#F5F9FD;border-color:#CFDDED;font-weight:600}.bi{position:relative;display:flex;align-items:center;gap:6px}.bi .bs{font-style:normal;font-size:13px;color:var(--ink2);white-space:nowrap}.bi .bu{position:absolute;right:9px;font-style:normal;font-size:12px;color:var(--ink3,#868D96)}.bi input{padding-right:40px}
+.badv{margin:-2px 0 12px}.badv summary{cursor:pointer;font-size:13px;color:var(--ink2);margin-bottom:8px}
+.bder{background:#FAFAF9;border:1px solid var(--line2);border-radius:10px;padding:8px 12px}.bdh{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3,#868D96);font-weight:700;margin:2px 0 2px}.bder .fx{margin:0}
+.bsub{border:1px solid var(--line2);border-radius:10px;padding:8px 12px;margin-bottom:10px}.bsh{display:grid;grid-template-columns:1fr 120px 60px;gap:10px;align-items:center;margin-bottom:4px}.bsh .ubar{width:120px}
+.ball{margin:0 0 12px}.ball summary{cursor:pointer;font-size:13px;color:var(--ink2)}
+.blk2.res.ok{background:#E7F4EC;border-color:#BFE0CB}.blk2.res.no{background:#FDECEA;border-color:#F3C3BE}.blk2.res .bn{background:#2E7D4F}.blk2.res.no .bn{background:#B42318}.bres{padding:12px 18px 16px;display:flex;flex-direction:column;gap:2px}.bres b{font-size:18px}
 .ctop{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 .a4wrap{overflow-x:auto;padding:4px 0 30px}.a4wrap .a4{width:794px;min-height:1123px;margin:0 auto;background:#fff;box-shadow:0 2px 14px rgba(20,25,30,.12);padding:40px 46px;box-sizing:border-box;color:#1F2328;font:11.5px/1.45 'Schibsted Grotesk',system-ui,sans-serif;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 1122px,#C9CED3 1122px,#C9CED3 1123px)}
 .a4wrap.pdf .a4{box-shadow:none;background-image:none;padding:0;width:714px;min-height:0}
@@ -759,13 +770,65 @@ function pProtocol(id){const p={...S.items[id],id};const pr=p.proto||{};const IT
 const DB0={
  mat:[{n:'C16',rk:310,rm:370,fm:16,ft0:8.5,fc0:17,fc90:2.2,fv:3.2,E:8000,gM:1.3},{n:'C20',rk:330,rm:400,fm:20,ft0:11.5,fc0:19,fc90:2.3,fv:3.6,E:9500,gM:1.3},{n:'C24',rk:350,rm:420,fm:24,ft0:14.5,fc0:21,fc90:2.5,fv:4.0,E:11000,gM:1.3},{n:'C30',rk:380,rm:460,fm:30,ft0:19,fc0:24,fc90:2.7,fv:4.0,E:12000,gM:1.3},
   {n:'GL24h',rk:385,rm:420,fm:24,ft0:19.2,fc0:24,fc90:2.5,fv:3.5,E:11500,gM:1.25},{n:'GL28h',rk:425,rm:460,fm:28,ft0:22.3,fc0:28,fc90:2.5,fv:3.5,E:12600,gM:1.25},{n:'GL32h',rk:440,rm:490,fm:32,ft0:25.6,fc0:32,fc90:2.5,fv:3.5,E:14200,gM:1.25}],
- nail:[{n:'4,0 × 40',d:4,L:40},{n:'4,0 × 50',d:4,L:50},{n:'4,0 × 60',d:4,L:60},{n:'6,0 × 60',d:6,L:60},{n:'6,0 × 80',d:6,L:80},{n:'6,0 × 100',d:6,L:100}],
+ nail:[{n:'4,0 × 40',d:4,L:40,fu:600,fax:0},{n:'4,0 × 50',d:4,L:50,fu:600,fax:0},{n:'4,0 × 60',d:4,L:60,fu:600,fax:0},{n:'6,0 × 60',d:6,L:60,fu:600,fax:0},{n:'6,0 × 80',d:6,L:80,fu:600,fax:0},{n:'6,0 × 100',d:6,L:100,fu:600,fax:0}],
  bolt:[{n:'M10',d:10,As:58},{n:'M12',d:12,As:84.3},{n:'M16',d:16,As:157},{n:'M20',d:20,As:245}],
  bcls:[{n:'4.6',fub:400},{n:'5.6',fub:500},{n:'8.8',fub:800}],
  hang:[[60,100,4,1],[60,140,6,1],[80,120,5,1],[80,160,7,2],[80,200,9,2],[100,140,6,1],[100,180,8,2],[100,220,10,2],[120,160,7,2],[120,200,9,2],[140,180,8,2],[160,200,9,2]].map(([b,H,m,msv])=>({n:'Vzor '+b+'×'+H,b,H,t:2,ls:70,k:2,m,ab:15,at:15,a1:20,msv,absv:40,atsv:40,Rd:0}))};
+// ===== náčrty k databáze =====
+const DBDESC={
+ mat:{n:'Označenie triedy',rk:'charakteristická objemová hmotnosť ρk – pre otlačenie a vyťahovanie',rm:'priemerná objemová hmotnosť – pre vlastnú tiaž',fm:'pevnosť v ohybe fm,k',ft0:'pevnosť v ťahu pozdĺž vlákien ft,0,k',fc0:'pevnosť v tlaku pozdĺž vlákien fc,0,k',fc90:'pevnosť v tlaku kolmo na vlákna fc,90,k',fv:'pevnosť v šmyku fv,k',E:'priemerný modul pružnosti E0,mean',gM:'parciálny súčiniteľ materiálu γM (rastlé 1,30, lepené 1,25)'},
+ nail:{n:'Označenie d × L',d:'priemer drieku klinca d',L:'celková dĺžka klinca L (hĺbka v dreve t1 = L − t plechu)',fu:'pevnosť drôtu v ťahu fu (z ETA, min. 600 MPa)',fax:'parameter vyťahovania fax,k z ETA (0 = hladký klinec, uvažuje sa 20·10⁻⁶·ρk²)'},
+ bolt:{n:'Označenie',d:'menovitý priemer svorníka d',As:'plocha jadra v závite As (nosná plocha v ťahu a strihu)'},
+ bcls:{n:'Pevnostná trieda, napr. 4.6',fub:'medza pevnosti v ťahu fub = prvé číslo × 100'},
+ hang:{n:'Názov strmeňa',b:'vnútorná šírka strmeňa b (= šírka trámu ± 2 mm)',H:'výška krídla strmeňa H',t:'hrúbka plechu t',ls:'hĺbka sedla ls (dĺžka uloženia trámu)',k:'počet zvislých radov otvorov na jednom krídle',m:'počet otvorov v jednom zvislom rade',ab:'spodný otvor od spodnej hrany strmeňa ab',at:'horný otvor od hornej hrany strmeňa at',a1:'vodorovný rozostup zvislých radov a1',msv:'počet svorníkov po výške (1 rad = pár, jeden v každom krídle)',absv:'spodný svorník od spodnej hrany',atsv:'horný svorník od hornej hrany',Rd:'návrhová únosnosť podľa výrobcu (0 = nezadané, nekontroluje sa)'}};
+const DBFIG={
+hang:`<svg viewBox="0 0 560 270" class="dbfig" font-family="inherit" font-size="12">
+ <defs><marker id="ar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#4E555D"/></marker></defs>
+ <text x="20" y="18" font-weight="700" fill="#1F2328">Pohľad na čelo hlavného nosníka</text>
+ <rect x="20" y="30" width="300" height="210" fill="#F3E9DA"/>
+ <rect x="70" y="60" width="60" height="150" fill="#C9CED3" stroke="#4E555D"/><rect x="210" y="60" width="60" height="150" fill="#C9CED3" stroke="#4E555D"/>
+ <rect x="130" y="80" width="80" height="130" fill="#EADCC6" stroke="#4E555D"/><text x="170" y="150" text-anchor="middle" fill="#6E7781">trám</text>
+ <rect x="130" y="210" width="80" height="5" fill="#8B929B"/>
+ ${[88,112,228,252].map(x=>[74,103,132,161,190].map(y=>`<circle cx="${x}" cy="${y}" r="4.5" fill="#1F2328"/>`).join('')).join('')}
+ <line x1="130" y1="48" x2="210" y2="48" stroke="#4E555D" marker-start="url(#ar)" marker-end="url(#ar)"/><text x="170" y="43" text-anchor="middle" font-weight="700" fill="#C8102E">b</text>
+ <line x1="52" y1="60" x2="52" y2="210" stroke="#4E555D" marker-start="url(#ar)" marker-end="url(#ar)"/><text x="40" y="139" font-weight="700" fill="#C8102E">H</text>
+ <line x1="290" y1="60" x2="290" y2="74" stroke="#4E555D"/><line x1="270" y1="60" x2="296" y2="60" stroke="#C9CED3"/><line x1="256" y1="74" x2="296" y2="74" stroke="#C9CED3"/><text x="300" y="71" font-weight="700" fill="#C8102E">at</text>
+ <line x1="290" y1="190" x2="290" y2="210" stroke="#4E555D"/><line x1="256" y1="190" x2="296" y2="190" stroke="#C9CED3"/><line x1="270" y1="210" x2="296" y2="210" stroke="#C9CED3"/><text x="300" y="204" font-weight="700" fill="#C8102E">ab</text>
+ <line x1="88" y1="228" x2="112" y2="228" stroke="#4E555D" marker-start="url(#ar)" marker-end="url(#ar)"/><text x="100" y="250" text-anchor="middle" font-weight="700" fill="#C8102E">a1</text>
+ <text x="100" y="56" text-anchor="middle" font-size="10.5" fill="#4E555D">k = 2 rady</text><text x="20" y="262" font-size="10.5" fill="#4E555D">m = počet otvorov v jednom zvislom rade (tu 5)</text>
+ <text x="350" y="18" font-weight="700" fill="#1F2328">Bočný rez</text>
+ <rect x="345" y="40" width="40" height="200" fill="#F3E9DA"/><text x="365" y="236" text-anchor="middle" font-size="10" fill="#6E7781" transform="rotate(-90 365 236)">hlavný nosník</text>
+ <rect x="385" y="60" width="5" height="155" fill="#8B929B"/><rect x="385" y="210" width="85" height="5" fill="#8B929B"/>
+ <rect x="394" y="100" width="150" height="110" fill="#EADCC6" stroke="#4E555D"/><text x="490" y="160" text-anchor="middle" fill="#6E7781">trám</text>
+ <line x1="385" y1="232" x2="470" y2="232" stroke="#4E555D" marker-start="url(#ar)" marker-end="url(#ar)"/><text x="428" y="252" text-anchor="middle" font-weight="700" fill="#C8102E">ls</text>
+ <line x1="400" y1="66" x2="391" y2="66" stroke="#4E555D" marker-end="url(#ar)"/><text x="404" y="70" font-weight="700" fill="#C8102E">t</text>
+ <line x1="390" y1="90" x2="394" y2="90" stroke="#4E555D"/><text x="397" y="93" font-size="10.5" fill="#4E555D">g (medzera, zadáva sa vo výpočte)</text>
+</svg>
+<p class="dim" style="font-size:12.5px;margin:4px 0 0">Svorníkové stĺpce (rady sv., ab sv., at sv.) platia, keď sa vo výpočte zvolí svorník: v každom krídle je jeden zvislý rad svorníkov, „rady sv.“ = počet svorníkov po výške.</p>`,
+nail:`<svg viewBox="0 0 560 120" class="dbfig" font-size="12"><defs><marker id="ar2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#4E555D"/></marker></defs>
+ <rect x="60" y="38" width="8" height="34" rx="2" fill="#4E555D"/><rect x="68" y="49" width="330" height="12" fill="#8B929B"/>${Array.from({length:20},(_,i)=>`<line x1="${110+i*14}" y1="49" x2="${116+i*14}" y2="61" stroke="#6E7781"/>`).join('')}<path d="M398 49 L418 55 L398 61z" fill="#8B929B"/>
+ <line x1="60" y1="90" x2="418" y2="90" stroke="#4E555D" marker-start="url(#ar2)" marker-end="url(#ar2)"/><text x="239" y="108" text-anchor="middle" font-weight="700" fill="#C8102E">L</text>
+ <line x1="440" y1="49" x2="440" y2="61" stroke="#4E555D"/><line x1="400" y1="49" x2="446" y2="49" stroke="#C9CED3"/><line x1="400" y1="61" x2="446" y2="61" stroke="#C9CED3"/><text x="452" y="59" font-weight="700" fill="#C8102E">d</text>
+ <text x="60" y="22" fill="#4E555D" font-size="11.5">konvexný (krúžkový) klinec – hĺbka v dreve t1 = L − hrúbka plechu</text></svg>`,
+bolt:`<svg viewBox="0 0 560 140" class="dbfig" font-size="12"><defs><marker id="ar3" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#4E555D"/></marker></defs>
+ <path d="M40 40 L58 30 L58 90 L40 80z" fill="#4E555D"/><rect x="58" y="48" width="300" height="24" fill="#8B929B"/>${Array.from({length:16},(_,i)=>`<line x1="${200+i*10}" y1="48" x2="${206+i*10}" y2="72" stroke="#5E646B"/>`).join('')}
+ <rect x="330" y="36" width="8" height="48" fill="#C9CED3" stroke="#6E7781"/><rect x="338" y="40" width="18" height="40" fill="#6E7781"/>
+ <line x1="380" y1="48" x2="380" y2="72" stroke="#4E555D"/><text x="386" y="64" font-weight="700" fill="#C8102E">d</text>
+ <text x="200" y="104" fill="#4E555D" font-size="11">závit</text><text x="326" y="104" fill="#4E555D" font-size="11">podložka</text>
+ <circle cx="470" cy="60" r="30" fill="#8B929B"/><circle cx="470" cy="60" r="24" fill="#4E555D"/><text x="470" y="64" text-anchor="middle" font-weight="700" fill="#fff">As</text><text x="470" y="108" text-anchor="middle" fill="#4E555D" font-size="11">rez v závite</text>
+ <text x="40" y="20" fill="#4E555D" font-size="11.5">As = plocha jadra v závite (napr. M12 → 84,3 mm²); podložka dw sa zadáva vo výpočte</text></svg>`,
+bcls:`<div class="dbinfo"><b>Trieda 4.6</b> → f<sub>ub</sub> = 4 × 100 = <b>400 MPa</b>, f<sub>yb</sub> = 0,6 × 400 = 240 MPa<br><b>Trieda 5.6</b> → f<sub>ub</sub> = 500 MPa · <b>Trieda 8.8</b> → f<sub>ub</sub> = 800 MPa, f<sub>yb</sub> = 640 MPa<br><span class="dim">Prvé číslo × 100 = medza pevnosti f<sub>ub</sub>, druhé číslo × 10 % = pomer medze klzu k medzi pevnosti.</span></div>`,
+mat:`<svg viewBox="0 0 560 170" class="dbfig" font-size="12"><defs><marker id="ar4" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#C8102E"/></marker></defs>
+ <rect x="130" y="50" width="300" height="70" fill="#F3E9DA" stroke="#B69A72"/>${[60,72,84,96,108].map(y=>`<path d="M135 ${y} Q 280 ${y-5} 425 ${y}" fill="none" stroke="#D9C3A0"/>`).join('')}
+ <text x="280" y="140" text-anchor="middle" fill="#6E7781" font-size="11">smer vlákien →</text>
+ <line x1="40" y1="85" x2="125" y2="85" stroke="#C8102E" stroke-width="2" marker-end="url(#ar4)"/><line x1="520" y1="85" x2="435" y2="85" stroke="#C8102E" stroke-width="2" marker-end="url(#ar4)"/><text x="40" y="76" font-weight="700" fill="#C8102E">f<tspan font-size="9" dy="3">c,0,k</tspan></text>
+ <line x1="280" y1="10" x2="280" y2="46" stroke="#C8102E" stroke-width="2" marker-end="url(#ar4)"/><text x="288" y="26" font-weight="700" fill="#C8102E">f<tspan font-size="9" dy="3">c,90,k</tspan></text>
+ <text x="452" y="40" fill="#4E555D" font-size="11">ťah pozdĺž vlákien: f<tspan font-size="8" dy="3">t,0,k</tspan></text><text x="452" y="140" fill="#4E555D" font-size="11">ohyb: f<tspan font-size="8" dy="3">m,k</tspan>, šmyk: f<tspan font-size="8" dy="3">v,k</tspan></text>
+ <text x="20" y="160" fill="#4E555D" font-size="11">ρk – objemová hmotnosť (otlačenie, vyťahovanie) · E0,mean – modul pružnosti · γM – súčiniteľ materiálu</text></svg>`};
+
 const DBCOLS={
  mat:{t:'Materiály dreva',h:'EN 338:2016, EN 14080:2013',c:[['n','Materiál'],['rk','ρk [kg/m³]'],['rm','ρmean'],['fm','fm,k'],['ft0','ft,0,k'],['fc0','fc,0,k'],['fc90','fc,90,k'],['fv','fv,k'],['E','E0,mean'],['gM','γM']]},
- nail:{t:'Klince',h:'konvexné klince – priemer a dĺžka',c:[['n','Klinec'],['d','d [mm]'],['L','L [mm]']]},
+ nail:{t:'Klince',h:'konvexné klince – priemer, dĺžka a parametre z ETA výrobcu',c:[['n','Klinec'],['d','d [mm]'],['L','L [mm]'],['fu','fu [MPa]'],['fax','fax,k [MPa]']]},
  bolt:{t:'Svorníky',h:'As = plocha jadra so závitom',c:[['n','Svorník'],['d','d [mm]'],['As','As [mm²]']]},
  bcls:{t:'Triedy svorníkov',h:'pevnosť v ťahu fub',c:[['n','Trieda'],['fub','fub [MPa]']]},
  hang:{t:'Trámové strmene',h:'Zoraď od najmenšieho – výpočet ponúkne prvé 3 vyhovujúce v tomto poradí.',c:[['n','Označenie'],['b','b [mm]'],['H','H [mm]'],['t','t [mm]'],['ls','sedlo ls'],['k','rady k'],['m','otvory m'],['ab','ab'],['at','at'],['a1','a1'],['msv','rady sv.'],['absv','ab sv.'],['atsv','at sv.'],['Rd','Rd [kN]']]}};
@@ -779,10 +842,10 @@ function strmenCalc(I){const D=cdb();const sv=I.fast==='Svorník',obo=I.side==='
  const FA=Math.max(I.FG1,obo?I.FG2:0),FB=Math.max(I.F1,obo?I.F2:0);const g1=FA/kmG>FB/I.km;const FEd=g1?FA:FB,kmod=g1?kmG:I.km;
  const TA=I.FG1+(obo?I.FG2:0),TB=I.F1+(obo?I.F2:0);const g2=TA/kmG>TB/I.km;const Ftot=g2?TA:TB,km90=g2?kmG:I.km;
  const mH=dbGet('mat',I.matH),mJ=dbGet('mat',I.matJ);const rk=mH.rk,fc90H=mH.fc90,fc90J=mJ.fc90,gMJ=mJ.gM;
- const faxAuto=20e-6*rk*rk,faxk=I.fax!==''&&I.fax!=null?+I.fax:faxAuto;
- const B=dbGet('bolt',I.bolt),BC=dbGet('bcls',I.bcls),N=dbGet('nail',I.nail);const dwAuto=3*B.d,dw=I.dw!==''&&I.dw!=null?+I.dw:dwAuto;
+ const faxAuto=20e-6*rk*rk;
+ const B=dbGet('bolt',I.bolt),BC=dbGet('bcls',I.bcls),N=dbGet('nail',I.nail);const faxk=+N.fax>0?+N.fax:faxAuto;const dwAuto=3*B.d,dw=I.dw!==''&&I.dw!=null?+I.dw:dwAuto;
  const joint=sv&&obo?'dvojstrižný':'jednostrižný';const L=N.L;
- const d=sv?B.d:N.d,fu=sv?BC.fub:+I.fun;const fhk=sv?0.082*(1-0.01*d)*rk/(1.35+0.015*d):0.082*rk*Math.pow(d,-0.3);const My=0.3*fu*Math.pow(d,2.6);
+ const d=sv?B.d:N.d,fu=sv?BC.fub:(+N.fu||600);const fhk=sv?0.082*(1-0.01*d)*rk/(1.35+0.015*d):0.082*rk*Math.pow(d,-0.3);const My=0.3*fu*Math.pow(d,2.6);
  const As=B.As;const washer=3*fc90H*Math.PI/4*(dw*dw-(d+1)**2);
  const FaxkSv=obo?0.9*fu*As:Math.min(washer,0.9*fu*As),FaxdSv=obo?0.9*fu*As/gM2:Math.min(kmod*washer/gM,0.9*fu*As/gM2),FvsSv=sv?0.6*fu*As/gM2:0;
  const p=sv?0.25:0.5;const fc90dJ=kmod*fc90J/gMJ;
@@ -920,7 +983,7 @@ function hgGeom(R){const c=R.c,h=c.h,sv=R.sv;const e=sv?Math.max(2*R.d,c.at):Mat
  const zr=c.mmax<=1?[c.H-c.at]:Array.from({length:c.mmax},(_,i)=>c.ab+i*(c.H-c.ab-c.at)/(c.mmax-1));
  const m=R.m,used=new Set(m>=c.mmax?zr.map((_,i)=>i):m<=1?[zr.length-1]:Array.from({length:m},(_,j)=>Math.round(j*(c.mmax-1)/(m-1))));
  return {h,b:+h.b,H:c.H,t:Math.max(+h.t,1.5),ls:+h.ls,fw,xs,zr,used,sv,hole:sv?R.d+1:Math.max(R.d+1,4.5)}}
-function figIsoP(R,I){const G=hgGeom(R);const C=0.866,Sn=0.5,BB=[1e9,1e9,-1e9,-1e9];
+function figIsoP(R,I,hl){const WR=(part,s)=>!hl||hl===part?s:`<g opacity="0.2">${s}</g>`;const G=hgGeom(R);const C=0.866,Sn=0.5,BB=[1e9,1e9,-1e9,-1e9];
  const P=(x,y,z)=>{const q=[(x+y)*C,(y-x)*Sn-z];BB[0]=Math.min(BB[0],q[0]);BB[1]=Math.min(BB[1],q[1]);BB[2]=Math.max(BB[2],q[0]);BB[3]=Math.max(BB[3],q[1]);return q};
  const pts=a=>a.map(q=>P(...q).map(v=>v.toFixed(2)).join(',')).join(' ');
  const poly=(a,f,st,w,op)=>`<polygon points="${pts(a)}" fill="${f}" stroke="${st||'none'}" stroke-width="${w||0.8}" stroke-linejoin="round"${op!=null?` fill-opacity="${op}"`:''}/>`;
@@ -929,13 +992,14 @@ function figIsoP(R,I){const G=hgGeom(R);const C=0.866,Sn=0.5,BB=[1e9,1e9,-1e9,-1
  const b2=G.b/2,t=G.t,H=G.H,fw=G.fw,ls=G.ls;const hH=+I.hH,bH=+I.bH,u=+I.u,z0=hH-u-H,zt=hH-u;const hJ=H+u-t,bJ=+I.bJ;
  const XL=-(b2+t+fw)-Math.max(110,H*0.8),XR=b2+t+fw+Math.max(90,H*0.6),Lj=Math.max(2*hJ,ls*3.2,190);
  const W={t:'#F3DEBC',f:'#F9EBD6',s:'#E8C99A',st:'#B08955',g:'#E5CCA3'},M={f:'#E6EAEE',s:'#BCC4CB',t:'#F7F8F9',e:'#A3ABB3',st:'#363C42'};
- let g='';
- g+=poly([[XL,-bH,hH],[XR,-bH,hH],[XR,0,hH],[XL,0,hH]],W.t,W.st,1);
- g+=poly([[XL,-bH,0],[XL,0,0],[XL,0,hH],[XL,-bH,hH]],W.s,W.st,1);
- g+=poly([[XL,0,0],[XR,0,0],[XR,0,hH],[XL,0,hH]],W.f,W.st,1);
- for(let i=1;i<7;i++){const z=hH*i/7;g+=line([[XL+8,0,z],[(XL+XR)/2,0,z+1.6],[XR-8,0,z-0.6]],W.g,0.6)}
- for(let i=1;i<4;i++){const y=-bH*i/4;g+=line([[XL+8,y,hH],[XR-8,y,hH+0]],W.g,0.55)}
- for(let r=8;r<Math.max(bH,hH)*1.2;r+=Math.max(7,hH/10)){const a=ell((c,sn)=>[XL-0.2,-bH*0.5+r*0.8*c,hH*0.15+r*sn],40).filter(q=>q[1]>-bH+1&&q[1]<-1&&q[2]>1&&q[2]<hH-1);if(a.length>2)g+=line(a,W.g,0.55)}
+ let g='';let gm='';
+ gm+=poly([[XL,-bH,hH],[XR,-bH,hH],[XR,0,hH],[XL,0,hH]],W.t,W.st,1);
+ gm+=poly([[XL,-bH,0],[XL,0,0],[XL,0,hH],[XL,-bH,hH]],W.s,W.st,1);
+ gm+=poly([[XL,0,0],[XR,0,0],[XR,0,hH],[XL,0,hH]],W.f,W.st,1);
+ for(let i=1;i<7;i++){const z=hH*i/7;gm+=line([[XL+8,0,z],[(XL+XR)/2,0,z+1.6],[XR-8,0,z-0.6]],W.g,0.6)}
+ for(let i=1;i<4;i++){const y=-bH*i/4;gm+=line([[XL+8,y,hH],[XR-8,y,hH+0]],W.g,0.55)}
+ for(let r=8;r<Math.max(bH,hH)*1.2;r+=Math.max(7,hH/10)){const a=ell((c,sn)=>[XL-0.2,-bH*0.5+r*0.8*c,hH*0.15+r*sn],40).filter(q=>q[1]>-bH+1&&q[1]<-1&&q[2]>1&&q[2]<hH-1);if(a.length>2)gm+=line(a,W.g,0.55)}
+ g+=WR('main',gm);
  const wallPts=x=>[[x,t,z0],[x,ls,z0],[x,ls,z0+H*0.3],[x,Math.min(ls*0.32,24),zt-H*0.1],[x,t,zt-H*0.1]];
  const holes=(x0)=>{let s='';G.zr.forEach((zz,ri)=>G.xs.forEach(xx=>{const cx=x0+xx,cz=z0+zz,r=G.hole/2;
    if(G.used.has(ri)){const rr=G.sv?R.d*1.0:R.d*1.3;s+=poly(ell((c,sn)=>[cx+rr*c,t+0.3,cz+rr*sn],22),G.sv?'#454B52':'#585F66','#22272B',0.55)+poly(ell((c,sn)=>[cx+rr*0.3+rr*0.32*c,t+0.4,cz+rr*0.3+rr*0.32*sn],10),'#C3C9CF','none',0,0.85)}
@@ -943,24 +1007,23 @@ function figIsoP(R,I){const G=hgGeom(R);const C=0.866,Sn=0.5,BB=[1e9,1e9,-1e9,-1
  const flange=(x0,left)=>{let s=poly([[x0,0,zt],[x0+fw,0,zt],[x0+fw,t,zt],[x0,t,zt]],M.t,M.st,0.6);if(left)s+=poly([[x0,0,z0],[x0,t,z0],[x0,t,zt],[x0,0,zt]],M.e,M.st,0.6);
    s+=poly([[x0,t,z0],[x0+fw,t,z0],[x0+fw,t,zt],[x0,t,zt]],M.f,M.st,0.9);return s+holes(x0)};
  // pravá strana (za trámom)
- g+=poly(wallPts(b2),M.s,M.st,0.7);
- g+=flange(b2+t,false);
+ g+=WR('hanger',poly(wallPts(b2),M.s,M.st,0.7)+flange(b2+t,false));
  // sedlo
- g+=poly([[-b2-t,0,z0+t],[b2+t,0,z0+t],[b2+t,ls,z0+t],[-b2-t,ls,z0+t]],M.t,M.st,0.8);
- g+=poly([[-b2-t,ls,z0],[b2+t,ls,z0],[b2+t,ls,z0+t],[-b2-t,ls,z0+t]],M.e,M.st,0.7);
+ g+=WR('hanger',poly([[-b2-t,0,z0+t],[b2+t,0,z0+t],[b2+t,ls,z0+t],[-b2-t,ls,z0+t]],M.t,M.st,0.8)+poly([[-b2-t,ls,z0],[b2+t,ls,z0],[b2+t,ls,z0+t],[-b2-t,ls,z0+t]],M.e,M.st,0.7));
  // trám
- const jz0=z0+t,jz1=jz0+hJ,jx0=-bJ/2,jx1=bJ/2,jy0=t+(+I.g||3);
- g+=poly([[jx0,jy0,jz1],[jx1,jy0,jz1],[jx1,Lj,jz1],[jx0,Lj,jz1]],W.t,W.st,0.9,0.7);
- g+=poly([[jx0,jy0,jz0],[jx0,Lj,jz0],[jx0,Lj,jz1],[jx0,jy0,jz1]],W.f,W.st,0.9,0.7);
- g+=poly([[jx0,Lj,jz0],[jx1,Lj,jz0],[jx1,Lj,jz1],[jx0,Lj,jz1]],W.s,W.st,0.9,0.96);
- for(let r=6;r<hJ*1.3;r+=Math.max(6,hJ/9)){const a=ell((c,sn)=>[jx0+bJ*0.55+r*0.85*c,Lj+0.2,jz0+hJ*0.1+r*sn],40).filter(q=>q[0]>jx0+1&&q[0]<jx1-1&&q[2]>jz0+1&&q[2]<jz1-1);if(a.length>2)g+=line(a,W.g,0.6)}
- for(let i=1;i<6;i++){const z=jz0+hJ*i/6;g+=line([[jx0,ls+8,z],[jx0,Lj-6,z+1]],W.g,0.55)}
+ const jz0=z0+t,jz1=jz0+hJ,jx0=-bJ/2,jx1=bJ/2,jy0=t+(+I.g||3);let gj='';const jop=hl==='joist'?0.97:0.7;
+ gj+=poly([[jx0,jy0,jz1],[jx1,jy0,jz1],[jx1,Lj,jz1],[jx0,Lj,jz1]],W.t,W.st,0.9,jop);
+ gj+=poly([[jx0,jy0,jz0],[jx0,Lj,jz0],[jx0,Lj,jz1],[jx0,jy0,jz1]],W.f,W.st,0.9,jop);
+ gj+=poly([[jx0,Lj,jz0],[jx1,Lj,jz0],[jx1,Lj,jz1],[jx0,Lj,jz1]],W.s,W.st,0.9,0.96);
+ for(let r=6;r<hJ*1.3;r+=Math.max(6,hJ/9)){const a=ell((c,sn)=>[jx0+bJ*0.55+r*0.85*c,Lj+0.2,jz0+hJ*0.1+r*sn],40).filter(q=>q[0]>jx0+1&&q[0]<jx1-1&&q[2]>jz0+1&&q[2]<jz1-1);if(a.length>2)gj+=line(a,W.g,0.6)}
+ for(let i=1;i<6;i++){const z=jz0+hJ*i/6;gj+=line([[jx0,ls+8,z],[jx0,Lj-6,z+1]],W.g,0.55)}
+ g+=WR('joist',gj);
  // ľavá strana (pred trámom)
- const ow=-b2-t;g+=poly(wallPts(ow),M.f,M.st,0.9);
- g+=poly([[ow,ls,z0],[ow+t,ls,z0],[ow+t,ls,z0+H*0.3],[ow,ls,z0+H*0.3]],M.e,M.st,0.6);
- [[0.42,0.5],[0.7,0.24],[0.3,0.22]].forEach(([fy,fz])=>{const cy=ls*fy,cz=z0+H*fz,r=Math.max(2,R.d*0.55);g+=poly(ell((c,sn)=>[ow-0.3,cy+r*c,cz+r*sn],14),'#fff','#4E555D',0.6)});
- g+=flange(-b2-t-fw,true);
- g+=line([[-b2-t,t+0.2,z0+2],[-b2-t,t+0.2,zt-2]],'#8E959C',0.6)+line([[b2+t,t+0.2,z0+2],[b2+t,t+0.2,zt-2]],'#8E959C',0.6);
+ const ow=-b2-t;let gh=poly(wallPts(ow),M.f,M.st,0.9);
+ gh+=poly([[ow,ls,z0],[ow+t,ls,z0],[ow+t,ls,z0+H*0.3],[ow,ls,z0+H*0.3]],M.e,M.st,0.6);
+ [[0.42,0.5],[0.7,0.24],[0.3,0.22]].forEach(([fy,fz])=>{const cy=ls*fy,cz=z0+H*fz,r=Math.max(2,R.d*0.55);gh+=poly(ell((c,sn)=>[ow-0.3,cy+r*c,cz+r*sn],14),'#fff','#4E555D',0.6)});
+ gh+=flange(-b2-t-fw,true);
+ gh+=line([[-b2-t,t+0.2,z0+2],[-b2-t,t+0.2,zt-2]],'#8E959C',0.6)+line([[b2+t,t+0.2,z0+2],[b2+t,t+0.2,zt-2]],'#8E959C',0.6);g+=WR('hanger',gh);
  const pad=16;const vb=[BB[0]-pad,BB[1]-pad,BB[2]-BB[0]+2*pad,BB[3]-BB[1]+2*pad];
  return `<svg viewBox="${vb.map(v=>v.toFixed(1)).join(' ')}" class="fig" xmlns="http://www.w3.org/2000/svg">${g}</svg>`}
 function figFrontP(R,I){const G=hgGeom(R);const c=R.c;const S=Math.min(1.6,190/G.H,230/(2*G.fw+G.b+2*G.t));const X=v=>v*S,Y=v=>v*S;
@@ -1058,42 +1121,6 @@ function sChecks(R){const c=R.c;const a=[['Spoje – šmyk a vyťahovanie',c.eta
  if(c.etaV!=null)a.push(['Strmeň podľa výrobcu',c.etaV,'vyr']);if(!R.noWeak)a.push(['Oslabenie nosníka',R.weak==='zadaj využitie z Pamiru'?null:Math.max(R.em,R.evv),'osl']);return a}
 const sLines=ls=>`<table class="fx">${ls.map(x=>`<tr><td class="fl">${x.l}</td><td class="ff">${String(x.f).replace(/·/g,'<span class="md"> · </span>')}</td><td class="fv">${x.v}</td><td class="fu">${x.u||''}</td></tr>`).join('')}</table>`;
 const sBar=u=>u==null?'<span class="dim">nezadané</span>':`<span class="ubar ${u<=1?'ok':'no'}"><i style="width:${Math.min(u,1)*100}%"></i></span><b class="${u<=1?'okv':'nov'}">${pct(u)}</b>`;
-// ===== obrazovka =====
-function vStrmen(){const I=sInp();let R;try{R=strmenCalc(I)}catch(e){console.error(e);return '<div class="panel">Výpočet zlyhal – skontroluj vstupy.</div>'}
- const D=cdb();const projs=pList().filter(x=>!['zamietnuta','fakturovana'].includes(x.status)).sort((a,b)=>String(b.no).localeCompare(String(a.no)));const P=S.calcProj&&S.items[S.calcProj]?S.items[S.calcProj]:null;
- const sv=R.sv,obo=R.obo,c=R.c;
- const num=(k,l,u,dis)=>`<label class="sf${dis?' dis':''}"><span>${l}</span><span class="iu"><input data-k="${k}" type="number" step="any" value="${esc(I[k])}" ${dis?'disabled':''}><i>${u||''}</i></span></label>`;
- const sel=(k,l,opts)=>`<label class="sf"><span>${l}</span><select data-k="${k}">${opts.map(o=>`<option ${String(o)===String(I[k])?'selected':''}>${esc(o)}</option>`).join('')}</select></label>`;
- const seg=(k,opts)=>`<div class="sseg">${opts.map(([v,n])=>`<button type="button" data-sk="${k}" data-sv="${esc(v)}" class="${String(I[k])===String(v)?'on':''}">${n}</button>`).join('')}</div>`;
- const KM=[['0.6','stále'],['0.7','dlhodobé'],['0.8','strednodobé'],['0.9','krátkodobé']];
- const steps=sSteps(I,R);const open=S.sOpen||{};
- setTimeout(sBind2,0);
- return `<div class="ctop"><button class="btn q" onclick="S.calc=null;render()">← Výpočty</button><div class="ctt"><b>Trámový strmeň</b><span>STN EN 1995-1-1</span></div><span style="flex:1"></span>
-  <select id="sproj" style="max-width:300px"><option value="">— bez zákazky —</option>${projs.map(x=>`<option value="${x.id}" ${x.id===S.calcProj?'selected':''}>${esc(x.no)} – ${esc(x.title)}</option>`).join('')}</select>
-  <button class="btn" onclick="sPreview()">Náhľad tlače</button><button class="btn p" onclick="sPdf(true)" ${P?'':'disabled title="Vyber zákazku"'}>Uložiť do zákazky</button></div>
- <div class="sx"><form class="sin" id="sinf" onsubmit="return false">
-  <div class="sc"><h4>Prvok</h4><div class="g2"><label class="sf"><span>Označenie</span><input data-k="prvok" value="${esc(I.prvok)}"></label><label class="sf"><span>Vypracoval</span><input data-k="vyp" value="${esc(I.vyp)}"></label></div><label class="sf"><span>Kontroloval</span><input data-k="kon" value="${esc(I.kon)}"></label></div>
-  <div class="sc"><h4>Napojenie a zaťaženie</h4>${seg('side',[['jednostranné','Jednostranné'],['obojstranné','Obojstranné']])}
-   <div class="g2">${num('F1','F<sub>Ed,1</sub> – reakcia trámu 1','kN')}${num('F2','F<sub>Ed,2</sub> – reakcia trámu 2','kN',!obo)}</div>
-   <label class="sf"><span>k<sub>mod</sub> pre tieto reakcie</span></label>${seg('km',KM.map(([v,n])=>[v,`<b>${v.replace('.',',')}</b> <small>${n}</small>`]))}
-   <details ${+I.FG1||+I.FG2?'open':''}><summary>Kontrola len so stálym zaťažením</summary><div class="g2">${num('FG1','F<sub>Ed,G,1</sub> (1,35·G)','kN')}${num('FG2','F<sub>Ed,G,2</sub> (1,35·G)','kN',!obo)}</div></details></div>
-  <div class="sc"><h4>Hlavný nosník</h4><div class="g3">${sel('matH','Trieda',D.mat.map(x=>x.n))}${num('bH','Šírka b<sub>H</sub>','mm')}${num('hH','Výška h<sub>H</sub>','mm')}</div></div>
-  <div class="sc"><h4>Trám</h4><div class="g2">${sel('matJ','Trieda',D.mat.map(x=>x.n))}${num('bJ','Šírka b<sub>J</sub>','mm')}</div><div class="g2">${num('u','Odsadenie strmeňa od hornej hrany u','mm')}${num('g','Medzera čelo trámu – nosník g','mm')}</div></div>
-  <div class="sc"><h4>Spojovací prostriedok</h4>${seg('fast',[['Konvexný klinec','Konvexné klince'],['Svorník','Svorníky']])}
-   ${sv?`<div class="g2">${sel('bolt','Svorník',D.bolt.map(x=>x.n))}${sel('bcls','Trieda',D.bcls.map(x=>x.n))}</div><div class="g2"><label class="sf"><span>Podložka d<sub>w</sub></span><span class="iu"><input data-k="dw" type="number" step="any" value="${esc(I.dw)}" placeholder="${f2(R.dwAuto,0)}"><i>mm</i></span></label>${num('fup','Pevnosť plechu f<sub>u,p</sub>','MPa')}</div>`
-    :`<div class="g2">${sel('nail','Klinec d × L',D.nail.map(x=>x.n))}${num('fun','Pevnosť drôtu f<sub>u</sub>','MPa')}</div><label class="sf"><span>Parameter vyťahovania f<sub>ax,k</sub> (z ETA, prázdne = hladký klinec)</span><span class="iu"><input data-k="fax" type="number" step="any" value="${esc(I.fax)}" placeholder="${f2(R.faxAuto)}"><i>MPa</i></span></label>`}</div>
-  <details class="sc"><summary><b>Súčinitele a doplnkové vstupy</b></summary><div class="g3" style="margin-top:10px">${num('gM','γ<sub>M</sub> spoje','')}${num('gM2','γ<sub>M2</sub> oceľ','')}${sel('sc','Trieda prevádzky',[1,2,3])}</div><div class="g3">${num('kc90','k<sub>c,90</sub>','')}${num('etam','η<sub>m</sub> nosníka (Pamir)','')}${num('etav','η<sub>v</sub> nosníka (Pamir)','')}</div></details>
- </form>
- <section class="sout">
-  <div class="sv ${R.all?'ok':'no'}"><div class="svi">${R.all?'✓':'✕'}</div><div><b>${R.all?'Vyhovuje':'Nevyhovuje'}</b><span>${esc(R.navrh.replace(/^Návrh: /,''))}</span></div><div class="svm"><small>max. využitie</small><b>${pct(R.u>1&&R.all?1:R.u)}</b></div></div>
-  <div class="panel shg"><div class="shf">${figIsoP(R,I)}</div><div class="shd"><div class="dim" style="font-size:12px;letter-spacing:.1em">ZVOLENÝ STRMEŇ</div><h3>${esc(c.h.n)}</h3>
-   <dl><dt>Rozmery b × H × t</dt><dd>${f2(c.h.b,0)} × ${f2(c.H,0)} × ${f2(c.t,1)} mm</dd><dt>Sedlo l<sub>s</sub></dt><dd>${f2(c.h.ls,0)} mm</dd><dt>${sv?'Svorníky':'Klince'}</dt><dd><b>${2*c.k*R.m} ks</b> na strmeň${sv?'':` (${R.m} z ${c.mmax} v rade)`}</dd><dt>F<sub>Ed</sub> / e / M<sub>Ed</sub></dt><dd>${f2(R.FEd)} kN / ${f2(c.e,1)} mm / ${f2(c.MEd,3)} kNm</dd></dl>
-   <details><summary>Rozmiestnenie otvorov s kótami</summary>${figFrontP(R,I)}</details></div></div>
-  <div class="panel"><h3 style="margin-top:0">Vhodné strmene z databázy</h3><div class="salt">${[1,2,3].map(i=>{const x=R.top.find(t=>t.rank===i);return x?`<button class="sa ${c===x?'on':''}" onclick="sInp().alt=${i};render()"><small>${i}. najmenší vyhovujúci</small><b>${esc(x.h.n)}</b><span>${x.nmin} ks · spoje ${pct(x.etaS)}</span></button>`:`<div class="sa empty"><small>${i}.</small><span>—</span></div>`}).join('')}</div>
-   <details><summary>Všetky strmene (${R.cat.length})</summary><table class="satab"><tr><th>Strmeň</th><th>b × H</th><th>Výsledok</th><th>min. ks</th><th>η spoje</th></tr>${R.cat.map(x=>`<tr class="${x===c?'sel':''}"><td>${esc(x.h.n)}</td><td>${x.h.b} × ${x.H}</td><td><span class="tag ${x.res==='Vyhovuje'?'ok':x.res==='Nevyhovuje'?'bad':''}">${esc(x.res)}</span></td><td>${x.nmin??'–'}</td><td>${x.etaS==null?'–':pct(x.etaS)}</td></tr>`).join('')}</table><p class="dim" style="font-size:12.5px">Strmene a ich poradie upravíš v Databáze.</p></details></div>
-  <div class="panel"><h3 style="margin-top:0">Posúdenie</h3><div class="schk">${sChecks(R).map(([n,u,id])=>`<button class="sck" onclick="S.sOpen={...(S.sOpen||{}),${id}:!(S.sOpen||{}).${id}};render()"><span>${n}</span>${sBar(u)}</button>`).join('')}<div class="sck st"><span>Rozostupy, vzdialenosti, šírka</span><b class="${c.spOK&&c.wOK?'okv':'nov'}">${c.spOK&&c.wOK?'vyhovuje':'nevyhovuje'}</b></div></div></div>
-  <div class="panel"><h3 style="margin-top:0">Postup výpočtu</h3>${steps.map(s=>`<details class="sst" ${open[s.id]?'open':''}><summary><span>${s.t}</span>${s.eta!=null?sBar(s.eta):s.ok!=null?`<b class="${s.ok?'okv':'nov'}">${s.ok?'vyhovuje':'nevyhovuje'}</b>`:''}</summary>${sLines(s.lines)}</details>`).join('')}</div>
- </section></div>`}
 function sBind2(){const f=$('#sinf');if(!f)return;const ps=$('#sproj');if(ps)ps.onchange=()=>{S.calcProj=ps.value||null;render()};
  const TXT=['prvok','vyp','kon','side','matH','matJ','fast','nail','bolt','bcls','km'];
  const setv=(k,v)=>{const I=sInp();I[k]=TXT.includes(k)?(k==='km'?+v:v):(['fax','dw'].includes(k)&&v==='')?'':(+v)};
@@ -1102,23 +1129,76 @@ function sBind2(){const f=$('#sinf');if(!f)return;const ps=$('#sproj');if(ps)ps.
  f.querySelectorAll('select[data-k]').forEach(el=>el.addEventListener('change',()=>{setv(el.dataset.k,el.value);rer()}));
  f.querySelectorAll('[data-sk]').forEach(b=>b.addEventListener('click',()=>{setv(b.dataset.sk,b.dataset.sv);rer()}));
  document.querySelectorAll('.sst').forEach((d,i)=>d.addEventListener('toggle',()=>{}))}
-// ===== protokol A4 =====
-function sReportBlocks(I,R,P){const c=R.c;const B=[];const add=(html,keep)=>B.push({html,keep});const today2=new Date().toLocaleDateString('sk-SK');
- add(`<div class="rtitle"><div class="rk">STATICKÝ VÝPOČET</div><h1>Trámový strmeň</h1><div class="rs">Napojenie trámu na hlavný nosník · STN EN 1995-1-1</div></div>`);
- add(`<table class="rinfo"><tr><td>Zákazka</td><td><b>${esc(P?P.no:'—')}</b></td><td>Vypracoval</td><td>${esc(I.vyp||'')}</td></tr><tr><td>Projekt</td><td>${esc(P?P.title:'—')}</td><td>Kontroloval</td><td>${esc(I.kon||'')}</td></tr><tr><td>Miesto stavby</td><td>${esc(P?P.place||'':'')}</td><td>Dátum</td><td>${today2}</td></tr><tr><td>Prvok</td><td><b>${esc(I.prvok||'')}</b></td><td></td><td></td></tr></table>`);
- add(`<div class="rsum ${R.all?'ok':'no'}"><div class="rsv">${R.all?'✓ VYHOVUJE':'✕ NEVYHOVUJE'}</div><div class="rsn">${esc(R.navrh.replace(/^Návrh: /,''))}</div></div>`);
+// ===== strmeň – blokový výpočet =====
+function sInDef(I,R){const D=cdb();const KM=[['0.6','0,6 stále'],['0.7','0,7 dlhodobé'],['0.8','0,8 strednodobé'],['0.9','0,9 krátkodobé']];
+ return {
+  zat:[{k:'prvok',l:'Označenie prvku',t:'txt'},{k:'side',l:'Napojenie',t:'seg',o:[['jednostranné','jednostranné'],['obojstranné','obojstranné']]},{k:'F1',l:'Reakcia trámu 1 (MSÚ)',s:'F<sub>Ed,1</sub>',u:'kN'},{k:'F2',l:'Reakcia trámu 2 (MSÚ)',s:'F<sub>Ed,2</sub>',u:'kN',dis:!R.obo},{k:'km',l:'Trvanie zaťaženia',s:'k<sub>mod</sub>',t:'seg',o:KM},{k:'sc',l:'Trieda prevádzky',t:'seg',o:[['1','1'],['2','2'],['3','3']]},{k:'FG1',l:'Len stále 1,35·G – trám 1 (0 = nekontroluje sa)',s:'F<sub>Ed,G,1</sub>',u:'kN',adv:1},{k:'FG2',l:'Len stále 1,35·G – trám 2',s:'F<sub>Ed,G,2</sub>',u:'kN',dis:!R.obo,adv:1},{k:'gM',l:'Súčiniteľ spojov',s:'γ<sub>M</sub>',adv:1},{k:'gM2',l:'Súčiniteľ ocele',s:'γ<sub>M2</sub>',adv:1}],
+  hl:[{k:'matH',l:'Trieda dreva',t:'sel',o:D.mat.map(x=>x.n)},{k:'bH',l:'Šírka',s:'b<sub>H</sub>',u:'mm'},{k:'hH',l:'Výška',s:'h<sub>H</sub>',u:'mm'},{k:'etam',l:'Využitie v ohybe v mieste strmeňa (z Pamiru)',s:'η<sub>m</sub>',adv:1,dis:R.noWeak},{k:'etav',l:'Využitie v šmyku v mieste strmeňa (z Pamiru)',s:'η<sub>v</sub>',adv:1,dis:R.noWeak}],
+  tr:[{k:'matJ',l:'Trieda dreva',t:'sel',o:D.mat.map(x=>x.n)},{k:'bJ',l:'Šírka',s:'b<sub>J</sub>',u:'mm'},{k:'g',l:'Medzera čelo trámu – nosník',s:'g',u:'mm'},{k:'kc90',l:'Súčiniteľ tlaku ⊥',s:'k<sub>c,90</sub>',adv:1}],
+  sp:[{k:'fast',l:'Typ',t:'seg',o:[['Konvexný klinec','konvexné klince'],['Svorník','svorníky']]},...(R.sv?[{k:'bolt',l:'Svorník (z databázy)',t:'sel',o:D.bolt.map(x=>x.n)},{k:'bcls',l:'Pevnostná trieda',t:'sel',o:D.bcls.map(x=>x.n)},{k:'dw',l:'Priemer podložky (prázdne = 3d)',s:'d<sub>w</sub>',u:'mm',ph:f2(R.dwAuto,0)},{k:'fup',l:'Pevnosť plechu strmeňa',s:'f<sub>u,p</sub>',u:'MPa'}]:[{k:'nail',l:'Klinec (z databázy)',t:'sel',o:D.nail.map(x=>x.n)}])],
+  st:[{k:'u',l:'Odsadenie hornej hrany strmeňa pod hornú hranu nosníka',s:'u',u:'mm'}]}}
+function sBlk(I,R){const c=R.c,sv=R.sv,obo=R.obo;const L=(l,f,v,u)=>({l,f,v,u});const st=sSteps(I,R);const get=id=>(st.find(s=>s.id===id)||{lines:[]}).lines;const N=dbGet('nail',I.nail);
+ return [
+ {id:'zat',n:'Zaťaženie a podmienky',fig:'pud',der:[L('Rozhodujúca reakcia na jeden strmeň','F<sub>Ed</sub>',f2(R.FEd),'kN'),L('Súčiniteľ k<sub>mod</sub> rozhodujúcej kombinácie','k<sub>mod</sub>',f2(R.kmod),''),L('Súčet reakcií v mieste pripojenia','F<sub>Ed,tot</sub>',f2(R.Ftot),'kN'),L('k<sub>mod</sub> pre rozštiepenie','k<sub>mod,90</sub>',f2(R.km90),'')]},
+ {id:'hl',n:'Hlavný nosník',fig:'main',der:[L('Charakteristická objemová hmotnosť','ρ<sub>k</sub>',f2(R.rk,0),'kg/m³'),L('Pevnosť v tlaku kolmo na vlákna','f<sub>c,90,k</sub>',f2(R.fc90H,1),'MPa')]},
+ {id:'tr',n:'Vedľajší trám',fig:'joist',der:[L('Pevnosť v tlaku kolmo na vlákna','f<sub>c,90,k</sub>',f2(R.fc90J,1),'MPa'),L('Parciálny súčiniteľ materiálu','γ<sub>M</sub>',f2(R.gMJ),''),L('Návrhová pevnosť','f<sub>c,90,d</sub> = k<sub>mod</sub>·f<sub>c,90,k</sub> / γ<sub>M</sub>',f2(R.fc90dJ),'MPa')]},
+ {id:'sp',n:'Spojovací prostriedok',fig:sv?'bolt':'nail',der:sv?[L('Priemer','d',f2(R.d,0),'mm'),L('Pevnosť v ťahu','f<sub>ub</sub>',f2(R.fu,0),'MPa'),L('Pevnosť v otlačení dreva (α = 90°)','f<sub>h,k</sub>',f2(R.fhk),'MPa'),L('Plastický moment','M<sub>y,Rk</sub> = 0,3·f<sub>ub</sub>·d<sup>2,6</sup>',f2(R.My,0),'Nmm'),L('Ťah – podložka / jadro','F<sub>ax,Rk</sub>',f2(R.FaxkSv,0),'N')]
+   :[L('Priemer / dĺžka','d / L',f2(R.d,1)+' / '+f2(R.L,0),'mm'),L('Pevnosť drôtu (databáza)','f<sub>u</sub>',f2(R.fu,0),'MPa'),L('Parameter vyťahovania'+(+N.fax>0?' (ETA)':' (hladký klinec)'),'f<sub>ax,k</sub>'+(+N.fax>0?'':' = 20·10<sup>−6</sup>·ρ<sub>k</sub>²'),f2(R.faxk),'MPa'),L('Pevnosť v otlačení dreva','f<sub>h,k</sub> = 0,082·ρ<sub>k</sub>·d<sup>−0,3</sup>',f2(R.fhk),'MPa'),L('Plastický moment','M<sub>y,Rk</sub> = 0,3·f<sub>u</sub>·d<sup>2,6</sup>',f2(R.My,0),'Nmm')]},
+ {id:'st',n:'Strmeň',fig:'hanger',sel:1,der:[L('Rozmery','b × H × t',f2(c.h.b,0)+' × '+f2(c.H,0)+' × '+f2(c.t,1),'mm'),L('Hĺbka sedla','l<sub>s</sub>',f2(c.h.ls,0),'mm'),L('Otvory na krídle','k × m<sub>max</sub>',sv?`${c.mmax} svorník(y)`:`${c.k} × ${c.mmax}`,''),L('Krajné otvory','a<sub>b</sub> / a<sub>t</sub>',f2(c.ab,0)+' / '+f2(c.at,0),'mm'),L('Dĺžka uloženia','l<sub>b</sub> = l<sub>s</sub> − g',f2(c.lb,1),'mm'),L('Excentricita reakcie','e = t + g + l<sub>b</sub>/2',f2(c.e,1),'mm'),L('Moment od excentricity','M<sub>Ed</sub> = F<sub>Ed</sub>·e',f2(c.MEd,3),'kNm')]},
+ {id:'1ks',n:'Únosnosť jedného spojovacieho prostriedku',der:get('1ks').filter(x=>!/^Priemer|Pevnosť v otlačení|Plastický moment/.test(x.l))},
+ {id:'pos',n:'Posúdenie spoja – šmyk a vyťahovanie',eta:c.etaS,der:get('sp').slice(3)},
+ {id:'nav',n:'Návrh počtu klincov a overenie vzdialeností',fig:'front',ok:R.ok147&&c.spOK&&c.wOK,der:[L('Potrebný počet otvorov v zvislom rade','m',c.minm?c.minm+' z '+c.mmax:'nevyhovuje',''),L(sv?'Počet svorníkov na strmeň':'Počet klincov na strmeň','n = 2·k·m',String(2*c.k*R.m),'ks'),...get('roz').slice(0,4),L('Zvislý rozostup otvorov','s = '+f2(c.s,1)+' ≥ a<sub>2,min</sub> = '+f2(R.a2min,1),pct(R.eta146),''),...(sv?[]:[L('Hĺbka vniku klinca','t<sub>1</sub> = '+f2(c.t1,1)+' ≥ 6d = '+f2(6*R.d,1),c.t1>=6*R.d?'áno':'nie','')])]},
+ {id:'dop',n:'Dodatočné overenia',sub:[...['stp','tl','osl','vyr'].map(id=>st.find(s=>s.id===id)).filter(Boolean)]}]}
+function sFig(kind,I,R){if(kind==='pud')return figIsoP(R,I);if(kind==='front')return figFrontP(R,I);if(kind==='nail')return DBFIG.nail;if(kind==='bolt')return DBFIG.bolt;return figIsoP(R,I,kind)}
+function vStrmen(){const I=sInp();let R;try{R=strmenCalc(I)}catch(e){console.error(e);return '<div class="panel">Výpočet zlyhal – skontroluj vstupy.</div>'}
+ const projs=pList().filter(x=>!['zamietnuta','fakturovana'].includes(x.status)).sort((a,b)=>String(b.no).localeCompare(String(a.no)));const P=S.calcProj&&S.items[S.calcProj]?S.items[S.calcProj]:null;const c=R.c;
+ const DEF=sInDef(I,R);const BL=sBlk(I,R);
+ const ctl=d=>{const v=I[d.k];if(d.t==='seg')return `<div class="bf w"><span>${d.l}${d.s?` <i>${d.s}</i>`:''}</span><div class="sseg">${d.o.map(([o,n])=>`<button type="button" data-sk="${d.k}" data-sv="${esc(o)}" class="${String(v)===String(o)?'on':''}">${n}</button>`).join('')}</div></div>`;
+  if(d.t==='sel')return `<label class="bf"><span>${d.l}</span><select data-k="${d.k}">${d.o.map(o=>`<option ${String(o)===String(v)?'selected':''}>${esc(o)}</option>`).join('')}</select></label>`;
+  if(d.t==='txt')return `<label class="bf"><span>${d.l}</span><input data-k="${d.k}" value="${esc(v)}"></label>`;
+  return `<label class="bf${d.dis?' dis':''}"><span>${d.l}</span><span class="bi">${d.s?`<i class="bs">${d.s} =</i>`:''}<input data-k="${d.k}" type="number" step="any" value="${esc(v)}" ${d.ph?`placeholder="${d.ph}"`:''} ${d.dis?'disabled':''}><i class="bu">${d.u||''}</i></span></label>`};
+ const st=b=>b.eta!=null?sBar(b.eta):b.ok!=null?`<b class="${b.ok?'okv':'nov'}">${b.ok?'vyhovuje':'nevyhovuje'}</b>`:'';
+ const blk=(b,i)=>{const d=DEF[b.id]||[];const main=d.filter(x=>!x.adv),adv=d.filter(x=>x.adv);
+  let inner='';
+  if(b.sel)inner+=`<div class="salt">${[1,2,3].map(j=>{const x=R.top.find(t=>t.rank===j);return x?`<button class="sa ${c===x?'on':''}" onclick="sInp().alt=${j};render()"><small>${j}. najmenší vyhovujúci</small><b>${esc(x.h.n)}</b><span>${x.nmin} ks · spoje ${pct(x.etaS)}</span></button>`:`<div class="sa empty"><small>${j}.</small><span>—</span></div>`}).join('')}</div><details class="ball" ${(S.sopen||{}).all?'open':''} ontoggle="(S.sopen=S.sopen||{}).all=this.open"><summary>Všetky strmene z databázy (${R.cat.length})</summary><table class="satab"><tr><th>Strmeň</th><th>b × H</th><th>Výsledok</th><th>min. ks</th><th>η spoje</th></tr>${R.cat.map(x=>`<tr class="${x===c?'sel':''}"><td>${esc(x.h.n)}</td><td>${x.h.b} × ${x.H}</td><td><span class="tag ${x.res==='Vyhovuje'?'ok':x.res==='Nevyhovuje'?'bad':''}">${esc(x.res)}</span></td><td>${x.nmin??'–'}</td><td>${x.etaS==null?'–':pct(x.etaS)}</td></tr>`).join('')}</table></details>`;
+  if(main.length)inner+=`<div class="bin">${main.map(ctl).join('')}</div>`;
+  if(adv.length)inner+=`<details class="badv" ${(S.sopen||{})[b.id]?'open':''} ontoggle="(S.sopen=S.sopen||{})['${b.id}']=this.open"><summary>Ďalšie vstupy</summary><div class="bin">${adv.map(ctl).join('')}</div></details>`;
+  if(b.der&&b.der.length)inner+=`<div class="bder"><div class="bdh">${b.fig||b.id==='zat'||b.id==='hl'||b.id==='tr'||b.id==='sp'||b.id==='st'?'Uvažuje sa s':'Výpočet'}</div>${sLines(b.der)}</div>`;
+  if(b.sub)inner+=b.sub.map(s=>`<div class="bsub"><div class="bsh"><b>${s.t}</b>${s.eta!=null?sBar(s.eta):''}</div>${sLines(s.lines)}</div>`).join('');
+  return `<section class="blk2" id="b_${b.id}"><header><span class="bn">${i+1}</span><h3>${b.n}</h3><span class="bst">${st(b)}</span></header><div class="bbody ${b.fig?'hasfig':''}">${b.fig?`<div class="bfig">${sFig(b.fig,I,R)}</div>`:''}<div class="bmain">${inner}</div></div></section>`};
+ setTimeout(sBind2,0);
+ return `<div class="ctop sticky"><button class="btn q" onclick="S.calc=null;render()">← Výpočty</button><div class="ctt"><b>Trámový strmeň</b><span>${esc(I.prvok||'')} · STN EN 1995-1-1</span></div>
+  <span class="tag ${R.all?'ok':'bad'}" style="font-size:13px;padding:4px 12px">${R.all?'✓ Vyhovuje':'✕ Nevyhovuje'} · ${pct(Math.min(R.u,R.all?1:9))}</span><span style="flex:1"></span>
+  <select id="sproj" style="max-width:280px"><option value="">— bez zákazky —</option>${projs.map(x=>`<option value="${x.id}" ${x.id===S.calcProj?'selected':''}>${esc(x.no)} – ${esc(x.title)}</option>`).join('')}</select>
+  <button class="btn" onclick="sPreview()">Náhľad tlače</button><button class="btn p" onclick="sPdf(true)" ${P?'':'disabled title="Vyber zákazku"'}>Uložiť do zákazky</button></div>
+ <form id="sinf" class="blks" onsubmit="return false">${BL.map(blk).join('')}
+  <section class="blk2 res ${R.all?'ok':'no'}"><header><span class="bn">✓</span><h3>Výsledok</h3></header><div class="bres"><b>${R.all?'Strmeň vyhovuje':'Strmeň nevyhovuje'}</b><span>${esc(R.navrh.replace(/^Návrh: /,''))}</span></div></section></form>`}
+// ===== protokol: montážny list + kontrolovateľný výpočet =====
+function sReportBlocks(I,R,P){const c=R.c,sv=R.sv;const B=[];const add=(html,keep,brk)=>B.push({html,keep,brk});const today2=new Date().toLocaleDateString('sk-SK');const DEF=sInDef(I,R);
+ const info=`<table class="rinfo"><tr><td>Zákazka</td><td><b>${esc(P?P.no:'—')}</b></td><td>Prvok</td><td><b>${esc(I.prvok||'')}</b></td></tr><tr><td>Projekt</td><td>${esc(P?P.title:'—')}</td><td>Miesto stavby</td><td>${esc(P?P.place||'':'')}</td></tr><tr><td>Vypracoval</td><td>${esc(I.vyp||'')}</td><td>Dátum</td><td>${today2}</td></tr></table>`;
+ add(`<div class="rtitle"><div class="rk">MONTÁŽNY LIST</div><h1>Trámový strmeň ${esc(I.prvok||'')}</h1><div class="rs">Napojenie trámu ${esc(I.matJ)} b<sub>J</sub> = ${f2(+I.bJ,0)} mm na hlavný nosník ${esc(I.matH)} ${f2(+I.bH,0)} × ${f2(+I.hH,0)} mm · ${esc(I.side)}</div></div>`);
+ add(info);
  add(`<div class="rfig"><div>${svgImg(figIsoP(R,I))}</div><div>${svgImg(figFrontP(R,I))}</div></div>`);
- add(`<table class="rchk"><tr><th>Posúdenie</th><th>Využitie</th><th></th></tr>${sChecks(R).map(([n,u])=>`<tr><td>${n}</td><td>${u==null?'nezadané':pct(u)}</td><td>${u==null?'':`<span class="rb"><i style="width:${Math.min(u,1)*100}%;background:${u<=1?'#2E7D4F':'#B42318'}"></i></span>`}</td></tr>`).join('')}<tr><td>Rozostupy, vzdialenosti, šírka strmeňa</td><td>${c.spOK&&c.wOK?'vyhovuje':'nevyhovuje'}</td><td></td></tr></table>`);
- add(`<h2><span>1</span><b class="t">Vstupné údaje</b></h2>`,1);
- const kv=(a)=>`<table class="rkv">${a.map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>`;
- add(`<div class="r2">${kv([['Napojenie',esc(I.side)],['F<sub>Ed,1</sub>',f2(I.F1)+' kN'],...(R.obo?[['F<sub>Ed,2</sub>',f2(I.F2)+' kN']]:[]),['k<sub>mod</sub>',f2(I.km)],...(+I.FG1||+I.FG2?[['F<sub>Ed,G</sub> (1,35·G)',f2(I.FG1)+(R.obo?' / '+f2(I.FG2):'')+' kN']]:[]),['Trieda prevádzky',String(I.sc)],['γ<sub>M</sub> / γ<sub>M2</sub>',f2(+I.gM)+' / '+f2(+I.gM2)]])}${kv([['Hlavný nosník',esc(I.matH)+' · '+f2(+I.bH,0)+' × '+f2(+I.hH,0)+' mm'],['Trám',esc(I.matJ)+' · b<sub>J</sub> = '+f2(+I.bJ,0)+' mm'],['Odsadenie u / medzera g',f2(+I.u,0)+' / '+f2(+I.g,0)+' mm'],['Spojovací prostriedok',R.sv?`svorník ${esc(I.bolt)} (${esc(I.bcls)})`:`konvexný klinec ${esc(I.nail)}`],[R.sv?'Podložka d<sub>w</sub>':'f<sub>u</sub> / f<sub>ax,k</sub>',R.sv?f2(R.dw,0)+' mm':f2(+I.fun,0)+' / '+f2(R.faxk)+' MPa'],['Strmeň',esc(c.h.n)+' · '+f2(c.h.b,0)+' × '+f2(c.H,0)+' × '+f2(c.t,1)+' mm, l<sub>s</sub> = '+f2(c.h.ls,0)+' mm']])}</div>`);
- add(`<h2><span>2</span><b class="t">Výber strmeňa z databázy</b></h2>`,1);
- add(`<table class="rtab"><tr><th>Strmeň</th><th>b × H</th><th>Výsledok</th><th>min. ks</th><th>η spoje</th><th>η tlak ⊥</th><th>η rozšt.</th></tr>${R.cat.map(x=>`<tr class="${x===c?'sel':''}"><td>${esc(x.h.n)}${x===c?' ◄':''}</td><td>${x.h.b} × ${x.H}</td><td>${esc(x.res)}</td><td>${x.nmin??'–'}</td><td>${x.etaS==null?'–':pct(x.etaS)}</td><td>${pct(x.etaT)}</td><td>${pct(x.etaR)}</td></tr>`).join('')}</table>`);
- sSteps(I,R).forEach((s,i)=>{add(`<h2><span>${i+3}</span><b class="t">${s.t}</b>${s.eta!=null?`<em class="${s.eta<=1?'okv':'nov'}">η = ${pct(s.eta)}</em>`:''}</h2>`,1);
-  if(s.id==='sp')add(`<div class="rfig2">${svgImg(figExc())}</div>`);
-  for(let k=0;k<s.lines.length;k+=4)add(sLines(s.lines.slice(k,k+4)))});
+ const fast=sv?`Svorník ${esc(I.bolt)}, trieda ${esc(I.bcls)}, podložka d<sub>w</sub> ≥ ${f2(R.dw,0)} mm${R.obo?' – prechádzajúci, spoločný pre oba strmene':''}`:`Konvexný klinec ${esc(I.nail)}`;
+ add(`<table class="rmont"><tr><td>Strmeň</td><td><b>${esc(c.h.n)}</b> · ${f2(c.h.b,0)} × ${f2(c.H,0)} × ${f2(c.t,1)} mm${R.obo?' · 2 ks (obojstranne)':''}</td></tr><tr><td>Spojovací prostriedok do hlavného nosníka</td><td>${fast}</td></tr>
+  <tr><td>Počet na jeden strmeň</td><td><b>${2*c.k*R.m} ks</b>${sv?'':` – v každom zvislom rade ${R.m} z ${c.mmax} otvorov (${c.k} rady na krídle, 2 krídla)`}</td></tr>
+  <tr><td>Vhodné strmene (alternatívy)</td><td>${R.top.map(x=>`${esc(x.h.n)} (${x.nmin} ks)`).join(' · ')||'—'}</td></tr></table>`);
+ const cond=[`Horná hrana strmeňa ${f2(+I.u,0)} mm pod hornou hranou hlavného nosníka.`,`Šírka strmeňa ${f2(c.h.b,0)} mm zodpovedá šírke trámu ${f2(+I.bJ,0)} mm (tolerancia ± 2 mm).`,`Medzera medzi čelom trámu a hlavným nosníkom najviac ${f2(+I.g,0)} mm, trám uložený na sedle v dĺžke ≥ ${f2(c.lb,0)} mm.`,
+  ...(sv?[`Svorníky osadiť vždy v pároch, otvory d<sub>0</sub> = ${f2(R.d+1,0)} mm.`]:[`Vždy osadiť horný a spodný otvor v každom rade, ostatné rozmiestniť rovnomerne (rozostup ≈ ${f2(c.s,0)} mm, min. ${f2(R.a2min,0)} mm).`,`Hĺbka vniku klinca do nosníka ≥ ${f2(6*R.d,0)} mm (6d) – pri ${esc(I.nail)} je ${f2(c.t1,0)} mm.`]),
+  `Vzdialenosť najvyššieho spojovacieho prostriedku od hornej hrany nosníka ≥ ${f2(R.a4c,0)} mm, najnižšieho od spodnej hrany ≥ ${f2(R.a4t,0)} mm.`,`Klince do trámu (bočnice) osadiť podľa pokynov výrobcu strmeňa.`];
+ add(`<div class="rcond"><div class="rch">Podmienky montáže</div><ol>${cond.map(x=>`<li>${x}</li>`).join('')}</ol></div>`);
+ add(`<div class="rsum ${R.all?'ok':'no'}"><div class="rsv">${R.all?'✓ VYHOVUJE':'✕ NEVYHOVUJE'}</div><div class="rsn">max. využitie ${pct(Math.min(R.u,R.all?1:9))} · podrobný výpočet na ďalších stranách</div></div>`);
+ add(`<div class="rtitle"><div class="rk">STATICKÝ VÝPOČET</div><h1 style="font-size:20px">Trámový strmeň ${esc(I.prvok||'')} – kontrolovateľný výpočet</h1><div class="rs">STN EN 1995-1-1, STN EN 1993-1-8</div></div>`,0,1);
+ const kv=d=>`<table class="rkv">${d.map(x=>{let v=I[x.k];if(x.t==='seg')v=(x.o.find(o=>String(o[0])===String(v))||[,v])[1];if(x.k==='dw'&&v==='')v=f2(R.dwAuto,0);return `<tr><td>${x.l}${x.s?` (${x.s})`:''}</td><td>${esc(v)}${x.u?' '+x.u:''}</td></tr>`}).join('')}</table>`;
+ sBlk(I,R).forEach((b,i)=>{const d=(DEF[b.id]||[]).filter(x=>!(x.dis));add(`<h2><span>${i+1}</span><b class="t">${b.n}</b>${b.eta!=null?`<em class="${b.eta<=1?'okv':'nov'}">η = ${pct(b.eta)}</em>`:b.ok!=null?`<em class="${b.ok?'okv':'nov'}">${b.ok?'vyhovuje':'nevyhovuje'}</em>`:''}</h2>`,1);
+  if(b.id==='st')add(`<div class="rkvw">${kv([{l:'Zvolený strmeň',k:'_'}].map(()=>({l:'Zvolený strmeň',k:'prvok'})).slice(0,0))}<table class="rkv"><tr><td>Zvolený strmeň</td><td><b>${esc(c.h.n)}</b> (${R.top.findIndex(x=>x===c)+1||'–'}. najmenší vyhovujúci)</td></tr></table></div>`);
+  if(d.length)add(kv(d.filter(x=>x.k!=='prvok')));
+  if(b.id==='pos')add(`<div class="rfig2">${svgImg(figExc())}</div>`);
+  if(b.der)for(let k=0;k<b.der.length;k+=4)add(sLines(b.der.slice(k,k+4)));
+  if(b.sub)b.sub.forEach(s=>{add(`<div class="rsubh"><b>${s.t}</b>${s.eta!=null?` <span class="${s.eta<=1?'okv':'nov'}">η = ${pct(s.eta)}</span>`:''}</div>`,1);add(sLines(s.lines))})});
  add(`<div class="rend ${R.all?'ok':'no'}"><b>Záver:</b> ${R.all?'Strmeň vyhovuje.':'Strmeň nevyhovuje.'} ${esc(R.navrh.replace(/^Návrh: /,''))}</div>`);
  return B}
+
 const RCSS=`.rp{font:11px/1.45 'Schibsted Grotesk',Arial,sans-serif;color:#1F2328}.rp .pg{width:794px;height:1123px;padding:34px 48px 0;box-sizing:border-box;background:#fff;position:relative;overflow:hidden}
 .rp .ph{display:flex;justify-content:space-between;align-items:center;border-bottom:1.2px solid #1F2328;padding-bottom:7px;margin-bottom:16px;height:30px;box-sizing:content-box}.rp .ph .c{font-size:10.5px;color:#4E555D;text-align:center}.rp .ph .r{font-size:10.5px;text-align:right;color:#4E555D}
 .rp .pf{position:absolute;left:48px;right:48px;bottom:22px;border-top:1px solid #DFE2E4;padding-top:6px;display:flex;justify-content:space-between;font-size:9.5px;color:#868D96}
@@ -1131,13 +1211,13 @@ const RCSS=`.rp{font:11px/1.45 'Schibsted Grotesk',Arial,sans-serif;color:#1F232
 .rp .r2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.rp .rkv{width:100%;border-collapse:collapse}.rp .rkv td{padding:3px 4px;border-bottom:1px solid #F0F1F2}.rp .rkv td:first-child{color:#6E7781;width:42%}
 .rp .rtab{width:100%;border-collapse:collapse;font-size:10.5px}.rp .rtab th{background:#F4F5F6;text-align:left;padding:3px 6px;border:1px solid #E3E6E8}.rp .rtab td{padding:3px 6px;border:1px solid #E3E6E8}.rp .rtab tr.sel td{background:#EEF4FB;font-weight:700}
 .rp .fx{width:100%;border-collapse:collapse}.rp .fx td{padding:4px 4px;border-bottom:1px solid #F0F1F2;vertical-align:top}.rp .fx .fl{color:#6E7781;width:30%;font-size:10.5px}.rp .fx .ff{font-family:'Cambria Math',Cambria,'Times New Roman',serif;font-size:12px}.rp .fx .fv{text-align:right;font-weight:700;white-space:nowrap;width:70px}.rp .fx .fu{color:#6E7781;width:34px}
-.rp .fx .md,.fx .md{font-family:Arial,sans-serif;font-size:.9em}.rp .okv{color:#1E6B43}.rp .nov{color:#B42318}.rp .rend{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:12px}.rp .rend.ok{background:#E8F4ED}.rp .rend.no{background:#FDECEA}`;
+.rp .fx .md,.fx .md{font-family:Arial,sans-serif;font-size:.9em}.rp .rmont{width:100%;border-collapse:collapse;font-size:11.5px}.rp .rmont td{padding:6px 8px;border:1px solid #E3E6E8;vertical-align:top}.rp .rmont td:first-child{width:30%;color:#6E7781;background:#F7F8F8}.rp .rcond{border:1px solid #E3E6E8;border-radius:8px;padding:8px 12px}.rp .rch{font-weight:700;font-size:12.5px;margin-bottom:4px}.rp .rcond ol{margin:0;padding-left:18px}.rp .rcond li{margin:3px 0;font-size:11.5px}.rp .rsubh{font-size:12px;margin:8px 0 0;display:flex;gap:10px;align-items:baseline}.rp .okv{color:#1E6B43}.rp .nov{color:#B42318}.rp .rend{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:12px}.rp .rend.ok{background:#E8F4ED}.rp .rend.no{background:#FDECEA}`;
 async function sPaginate(I,R,P){const B=sReportBlocks(I,R,P);const host=$('#paper');host.innerHTML=`<style>${RCSS}</style><div class="rp"><div class="pg" style="height:auto"><div id="mz"></div></div></div>`;const mz=host.querySelector('#mz');
  const ds=B.map(b=>{const d=document.createElement('div');d.className='blk';d.innerHTML=b.html;mz.appendChild(d);return d});try{await document.fonts.ready}catch(e){}await sRaster(mz);const hs=ds.map((d,i)=>{B[i].html=d.innerHTML;return d.offsetHeight+9});host.innerHTML='';
  const AV=1123-34-46-60;const pages=[];let cur=[],hcur=0;
- B.forEach((b,i)=>{let need=hs[i];if(b.keep&&i+1<B.length)need+=hs[i+1];if(hcur+need>AV&&cur.length){pages.push(cur);cur=[];hcur=0}cur.push(b);hcur+=hs[i]});if(cur.length)pages.push(cur);
+ B.forEach((b,i)=>{let need=hs[i];if(b.keep&&i+1<B.length)need+=hs[i+1];if((b.brk||hcur+need>AV)&&cur.length){pages.push(cur);cur=[];hcur=0}cur.push(b);hcur+=hs[i]});if(cur.length)pages.push(cur);
  const N=pages.length;const today2=new Date().toLocaleDateString('sk-SK');
- return `<div class="rp">${pages.map((pg,i)=>`<div class="pg"><div class="ph">${sig(10,'#8B929B','#1F2328')}<div class="c">Trámový strmeň · ${esc(I.prvok||'')}</div><div class="r">${P?'Zákazka '+esc(P.no):''}</div></div>${pg.map(b=>`<div class="blk">${b.html}</div>`).join('')}<div class="pf"><span>LN · STATIK${I.vyp?' · vypracoval '+esc(I.vyp):''} · ${today2}</span><span>Strana ${i+1} / ${N}</span></div></div>`).join('')}</div>`}
+ return `<div class="rp">${pages.map((pg,i)=>`<div class="pg"><div class="ph">${sig(10,'#8B929B','#1F2328')}<div class="c">${i===0?'Montážny list':'Statický výpočet'} · Trámový strmeň ${esc(I.prvok||'')}</div><div class="r">${P?'Zákazka '+esc(P.no):''}</div></div>${pg.map(b=>`<div class="blk">${b.html}</div>`).join('')}<div class="pf"><span>LN · STATIK${I.vyp?' · vypracoval '+esc(I.vyp):''} · ${today2}</span><span>Strana ${i+1} / ${N}</span></div></div>`).join('')}</div>`}
 async function sPreview(){const I=sInp();const R=strmenCalc(I);const P=S.calcProj&&S.items[S.calcProj]?{...S.items[S.calcProj],id:S.calcProj}:null;toast('Pripravujem náhľad…');const html=await sPaginate(I,R,P);
  const d=document.createElement('div');d.id='prv';d.innerHTML=`<style>${RCSS}#prv{position:fixed;inset:0;background:#2A2F35;z-index:50;display:flex;flex-direction:column}#prv .pt{display:flex;gap:8px;align-items:center;padding:10px 16px;background:#1F2328;color:#fff}#prv .pt b{flex:1}#prv .pb{flex:1;overflow:auto;padding:24px 0}#prv .pt .btn{background:#fff;color:#1F2328;border-color:#fff}#prv .pt .btn.p{background:#2E7D4F;color:#fff;border-color:#2E7D4F}#prv .rp .pg{margin:0 auto 20px;box-shadow:0 4px 24px rgba(0,0,0,.35);transform-origin:top center}</style>
   <div class="pt"><b>Náhľad tlače – ${R.cat?'':''}Trámový strmeň</b><button class="btn" onclick="sPrint()">Tlačiť</button><button class="btn" onclick="sPdf(false)">Stiahnuť PDF</button>${P?`<button class="btn p" onclick="sPdf(true)">Uložiť do zákazky</button>`:''}<button class="btn" onclick="$('#prv').remove()">Zavrieť</button></div><div class="pb">${html}</div>`;
