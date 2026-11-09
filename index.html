@@ -97,6 +97,11 @@ tbody tr.click:hover td{background:#F7F8F7}
 .tag.warn::before{background:var(--warn)} .tag.warn{color:var(--warn)}
 .tag.bad::before{background:var(--bad)} .tag.bad{color:var(--bad)}
 .tag.on::before{background:var(--stat)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13.5px;cursor:pointer;background:var(--surface);font-weight:500}.chip input{width:15px;height:15px;margin:0}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}.pfold{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.ccard{text-align:left;border:1px solid var(--line);border-radius:12px;padding:18px;background:var(--surface);cursor:pointer;display:flex;flex-direction:column;gap:6px;font:inherit;color:inherit}.ccard:hover{border-color:var(--ink3,#868D96)}.ccard b{font-size:16px}.ccard span{color:var(--ink2);font-size:13.5px}.ccard.soon{cursor:default;opacity:.6;border-style:dashed}
+.ctl{display:grid;grid-template-columns:minmax(300px,440px) 1fr;gap:16px;align-items:start}.ctl>*{min-width:0}.ctl form h3{margin:14px 0 8px}.ctl form h3:first-child{margin-top:0}
+@media(max-width:1000px){.ctl{grid-template-columns:minmax(0,1fr)}}
 .seg{display:inline-flex;background:var(--line2);border-radius:7px;padding:3px;gap:2px;flex-wrap:wrap}
 .seg button{border:0;background:none;padding:6px 12px;border-radius:5px;cursor:pointer;font-weight:500;color:var(--ink2)}
 .seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(31,35,40,.12)}
@@ -373,6 +378,19 @@ AUTH.calSync=async(evs,map,calName)=>{const t=await token(['Calendars.ReadWrite'
 AUTH.savePdf=async(inv,blob)=>{if(!base)return;const y=String(inv.issueDate||'').slice(0,4)||'bez_roku';const n=String(inv.number||'faktura').replace(/[^\w-]/g,'');
   try{await g(`/me/drive/root:/${enc(base+'/LNStatik_zaloha/Faktury_PDF/'+y+'/Faktura_'+n+'.pdf')}:/content`,{method:'PUT',headers:{'Content-Type':'application/pdf'},body:blob})}catch(e){console.warn('pdf',e)}};
 
+
+// ---------- súbory projektov ----------
+const proot=()=>base.replace(/\/4_LNStatik\/2_Financie$/,'');const rel=p=>proot()+'/'+String(p).replace(/^\/+/,'');
+AUTH.fsOk=()=>!!base;
+AUTH.mkdir=async(path)=>{const parts=String(path).split('/').filter(Boolean);let cur=proot();
+  for(const nm of parts){const r=await g(`/me/drive/root:/${enc(cur)}:/children`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:nm,folder:{},'@microsoft.graph.conflictBehavior':'fail'})});
+    if(!r.ok&&r.status!==409)throw new Error('mkdir '+r.status);cur+='/'+nm}
+  const it=await g(`/me/drive/root:/${enc(cur)}?$select=id,webUrl,name`);return it.ok?it.json():null};
+AUTH.putFile=async(path,blob,type)=>{const r=await g(`/me/drive/root:/${enc(rel(path))}:/content`,{method:'PUT',headers:{'Content-Type':type||'application/octet-stream'},body:blob});if(!r.ok)throw new Error('put '+r.status);return r.json()};
+AUTH.item=async(path)=>{const r=await g(`/me/drive/root:/${enc(rel(path))}?$select=id,webUrl,name`);return r.ok?r.json():null};
+AUTH.rename=async(path,name)=>{const r=await g(`/me/drive/root:/${enc(rel(path))}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})});if(!r.ok)throw new Error('rename '+r.status);return r.json()};
+AUTH.listDir=async(path)=>{const r=await g(`/me/drive/root:/${enc(rel(path))}:/children?$select=name,webUrl,size,lastModifiedDateTime,folder,file&$top=200`);if(r.status===404)return null;if(!r.ok)throw new Error('list '+r.status);return (await r.json()).value||[]};
+
 // ---------- Outlook koncept ----------
 AUTH.mailDraft=async({subject,html,to,pdfs,logo})=>{const t=await token(['Mail.ReadWrite']);
   const att=pdfs.map(p=>({'@odata.type':'#microsoft.graph.fileAttachment',name:p.name,contentType:'application/pdf',contentBytes:p.b64}));
@@ -417,6 +435,8 @@ window.claude={use:async k=>{await started;if(!AUTH.ok)return null;
     <nav id="nav">
       <button data-v="prehlad">Prehľad</button>
       <small>Statika</small>
+      <button data-v="projekty">Projekty</button>
+      <button data-v="vypocty">Výpočty</button>
       <button data-v="faktury">Faktúry</button>
       <button data-v="cas">Čas</button>
       <button data-v="odberatelia">Odberatelia</button>
@@ -473,7 +493,7 @@ const DESC='Vypracovanie dokumentácie a projektu jednoduchých stavieb';
 const IMPORT={biz:{},clients:[],invoices:[]};
 
 // ===== state / storage =====
-const VIEWS=['prehlad','faktury','cas','odberatelia','vydavky','kapela','kalendar','nastavenia'];
+const VIEWS=['prehlad','projekty','vypocty','faktury','cas','odberatelia','vydavky','kapela','kalendar','nastavenia'];
 const S={items:{},view:VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'prehlad',year:new Date().getFullYear(),invF:'all',evF:'year',timeF:'month',mode:'start'};
 let col=null;const Q={};
 const DEF={kind:'settings',biz:{...IMPORT.biz},vatPayer:false,vatRate:23,rate:25,dueDays:14,prefix:'',desc:DESC,sign:'',logo:'',running:null,pin:''};
@@ -523,8 +543,231 @@ function lockApp(){closeModal();S.mode='start';S.firm=null;S.gatePin=false;rende
 ['pointerdown','keydown'].forEach(t=>document.addEventListener(t,()=>{S.lastAct=Date.now()},true));
 setInterval(()=>{if(S.mode==='full'&&Date.now()-(S.lastAct||0)>15*60e3)lockApp()},30000);
 
+// ---------- výpočty: drevo podľa STN EN 1995-1-1 (odporúčané hodnoty) ----------
+const MAT={
+ C16:{n:'C16',t:'r',fm:16,ft0:8.5,fc0:17,fv:3.2,E:8000,E05:5400,G:500,rk:310,rm:370},
+ C20:{n:'C20',t:'r',fm:20,ft0:11.5,fc0:19,fv:3.6,E:9500,E05:6400,G:590,rk:330,rm:400},
+ C24:{n:'C24',t:'r',fm:24,ft0:14.5,fc0:21,fv:4.0,E:11000,E05:7400,G:690,rk:350,rm:420},
+ C30:{n:'C30',t:'r',fm:30,ft0:19,fc0:24,fv:4.0,E:12000,E05:8000,G:750,rk:380,rm:460},
+ GL24h:{n:'GL24h',t:'l',fm:24,ft0:19.2,fc0:24,fv:3.5,E:11500,E05:9600,G:650,rk:385,rm:420},
+ GL28h:{n:'GL28h',t:'l',fm:28,ft0:22.3,fc0:28,fv:3.5,E:12600,E05:10500,G:650,rk:425,rm:460},
+ GL32h:{n:'GL32h',t:'l',fm:32,ft0:25.6,fc0:32,fv:3.5,E:14200,E05:11800,G:650,rk:440,rm:490}};
+const DUR=[['perm','stále'],['long','dlhodobé'],['med','strednodobé'],['short','krátkodobé'],['inst','okamžité']];
+const KMOD={1:{perm:.6,long:.7,med:.8,short:.9,inst:1.1},2:{perm:.6,long:.7,med:.8,short:.9,inst:1.1},3:{perm:.5,long:.55,med:.65,short:.7,inst:.9}};
+const KDEF={1:.6,2:.8,3:2.0};
+const GM={r:1.3,l:1.25};
+function tramCalc(p){
+ const m=MAT[p.mat];const L=p.L*1000,b=p.b,h=p.h;const sc=p.sc;
+ const A=b*h,W=b*h*h/6,I=b*h**3/12;
+ const gs=p.self?m.rm*9.81/1e3*(b/1000)*(h/1000):0;const G=p.gk+gs,Q=p.qk;
+ const gM=GM[m.t];const kcr=0.67;
+ const kh=m.t==='r'?(h<150?Math.min((150/h)**0.2,1.3):1):(h<600?Math.min((600/h)**0.1,1.1):1);
+ const combos=[{n:'Len stále zaťaženie',Ed:p.gG*G,km:KMOD[sc].perm,dur:'perm'}];
+ if(Q>0)combos.push({n:'Stále + premenné',Ed:p.gG*G+p.gQ*Q,km:KMOD[sc][p.dur],dur:p.dur});
+ for(const c of combos){c.M=c.Ed*p.L**2/8;c.V=c.Ed*p.L/2;c.sig=c.M*1e6/W;c.tau=1.5*c.V*1e3/(kcr*b*h);
+  c.fmd=c.km*kh*m.fm/gM;c.fvd=c.km*m.fv/gM;c.um=c.sig/c.fmd;c.uv=c.tau/c.fvd}
+ const cm=combos.reduce((a,c)=>c.um>a.um?c:a),cv=combos.reduce((a,c)=>c.uv>a.uv?c:a);
+ const w=q=>5*q*L**4/(384*m.E*I);const wG=w(G),wQ=w(Q);const kd=KDEF[sc];
+ const winst=wG+wQ,wfin=wG*(1+kd)+wQ*(1+p.psi2*kd);const lim1=L/p.l1,lim2=L/p.l2;
+ const r={m,L,b,h,A,W,I,gs,G,Q,gM,kcr,kh,kd,combos,cm,cv,wG,wQ,winst,wfin,lim1,lim2,ui:winst/lim1,uf:wfin/lim2};
+ r.u=Math.max(cm.um,cv.uv,r.ui,r.uf);return r}
+
+// ===== projekty (cenové ponuky a zákazky) =====
+const P_SUB=['1_Projekt data','2_Mail Inbox','3_Mail Sent','4_Podklady','5_Výpočty'];const P_DATA='1_Projekt data',P_CALC='5_Výpočty',P_DONE='6_Odovzdané';
+const P_CODE={'Rodinný dom':'RD','Bytový dom':'BD','Prístavba / nadstavba':'PR','Rekonštrukcia':'REK','Krov / strecha':'KR','Strop':'ST','Hala':'HALA','Garáž / prístrešok':'GAR','Občianska stavba':'OS','Iné':'INE'};
+const PST={cp:{rozprac:['Pripravuje sa','warn'],poslana:['Odoslaná',''],prijata:['Prijatá','ok'],zamietnuta:['Zamietnutá','bad']},zk:{rozprac:['Rozpracovaná','warn'],odovzdana:['Odovzdaná','ok'],fakturovana:['Vyfakturovaná','ok'],pozastavena:['Pozastavená','bad']}};
+const P_TYP=['Rodinný dom','Bytový dom','Prístavba / nadstavba','Rekonštrukcia','Krov / strecha','Strop','Hala','Garáž / prístrešok','Občianska stavba','Iné'];
+const P_MAT=['Drevo','Murivo','Betón','Oceľ'];
+const P_ROZ=['Statický výpočet','Výkresy (tvar, výstuž, detaily)','Technická správa','Posudok existujúcej konštrukcie','Návrh sanácie / zosilnenia','Konzultácia','Autorský dozor'];
+const P_POD=['Architektúra (pôdorysy, rezy)','Inžiniersko-geologický prieskum','Zameranie / fotky existujúceho stavu','Statika iných profesií','Požiadavky výrobcu / dodávateľa'];
+const P_STU=['Štúdia','Projekt pre stavebný zámer / povolenie','Realizačný projekt','Posudok','Iné'];
+const pSafe=s=>String(s||'').replace(/[\\/:*?"<>|#%\n\r]/g,' ').replace(/\s+/g,' ').trim().slice(0,60);
+const pList=()=>list('proj');
+const pYY=()=>String(new Date().getFullYear()).slice(2);
+function pNext(t){const pre=pYY()+(t==='cp'?'CP':'ZK');let mx=0;pList().forEach(p=>[p.no,p.cpNo].forEach(n=>{if(n&&n.startsWith(pre))mx=Math.max(mx,parseInt(n.slice(pre.length),10)||0)}));return pre+String(mx+1).padStart(3,'0')}
+function pName(p){const z=p.zl||{};return pSafe([p.no,z.code||P_CODE[z.type]||'Typ',p.place||'Mesto',p.client||'Meno'].join(' - ')).slice(0,90)}
+function pFolder(p){return p.folder||('1_Projekty/'+pName(p))}
+const pSt=p=>(PST[p.typ]||PST.cp)[p.status]||['?',''];
+const pFs=()=>window.AUTH&&AUTH.ok&&AUTH.fsOk&&AUTH.fsOk();
+function pHours(p){const ms=list('time').filter(e=>(e.note||'').toUpperCase().includes(p.no)||(p.cpNo&&(e.note||'').toUpperCase().includes(p.cpNo))).reduce((s,e)=>s+((e.end||Date.now())-e.start),0);return ms/36e5}
+
+function vProjects(){if(S.proj&&S.items[S.proj])return vProj(S.proj);S.proj=null;
+  const y=new Date().getFullYear(),yy=String(y).slice(2);const all=pList();
+  const cps=all.filter(p=>(p.cpNo||(p.typ==='cp'?p.no:'')||'').startsWith(yy+'CP'));
+  const won=cps.filter(p=>p.typ==='zk'||p.status==='prijata').length,lost=cps.filter(p=>p.typ==='cp'&&p.status==='zamietnuta').length;
+  const zkY=all.filter(p=>p.typ==='zk'&&p.no.startsWith(yy+'ZK'));const run=all.filter(p=>p.typ==='zk'&&p.status==='rozprac');
+  const F=S.pF||'act';const q=(S.pQ||'').toLowerCase();
+  const shown=all.filter(p=>F==='all'||(F==='cp'&&p.typ==='cp')||(F==='zk'&&p.typ==='zk')||(F==='act'&&!['zamietnuta','fakturovana'].includes(p.status))||(F==='done'&&['zamietnuta','fakturovana','odovzdana'].includes(p.status)))
+    .filter(p=>!q||[p.no,p.cpNo,p.title,p.client,p.place].join(' ').toLowerCase().includes(q)).sort((a,b)=>String(b.no).localeCompare(String(a.no)));
+  return `<div class="head"><div><h1>Projekty</h1><p class="lead">Cenové ponuky a zákazky. Pri založení sa v OneDrive (1_Projekty) vytvorí priečinok podľa vzoru.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap">${pFs()?'<button class="btn q" onclick="pImport()">Pripojiť existujúce priečinky</button>':''}<button class="btn" onclick="editProj(null,'zk')">Nová zákazka</button><button class="btn p" onclick="editProj(null,'cp')">Nová cenová ponuka</button></div></div>
+  <div class="figs">
+   <div class="fig"><div class="v">${cps.length}</div><div class="k">Cenových ponúk ${y}</div></div>
+   <div class="fig"><div class="v">${won+lost?Math.round(won/(won+lost)*100)+' %':'–'}</div><div class="k">Úspešnosť ponúk (${won} prijatých / ${lost} zamietnutých)</div></div>
+   <div class="fig"><div class="v">${run.length}</div><div class="k">Rozpracované zákazky</div></div>
+   <div class="fig"><div class="v">${eur0(zkY.reduce((s,p)=>s+(+p.price||0),0))}</div><div class="k">Hodnota zákaziek ${y}</div></div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><div class="seg">${[['act','Aktívne'],['cp','Ponuky'],['zk','Zákazky'],['done','Ukončené'],['all','Všetko']].map(([k,n])=>`<button class="${F===k?'on':''}" onclick="S.pF='${k}';render()">${n}</button>`).join('')}</div>
+   <input id="pq" type="search" placeholder="Hľadať číslo, názov, klienta…" value="${esc(S.pQ||'')}" style="max-width:280px" oninput="S.pQ=this.value;const p=this.selectionStart;render();const i=$('#pq');i.focus();i.setSelectionRange(p,p)"></div>
+  <div class="panel">${shown.length?`<table><thead><tr><th>Číslo</th><th>Názov</th><th>Klient</th><th>Stav</th><th>Termín</th><th class="r">Cena</th></tr></thead><tbody>
+   ${shown.map(p=>{const s=pSt(p);return `<tr class="click" onclick="S.proj='${p.id}';render();window.scrollTo(0,0)"><td class="b" style="white-space:nowrap">${esc(p.no)}${p.cpNo?`<div class="dim" style="font-weight:400;font-size:12px">${esc(p.cpNo)}</div>`:''}</td><td>${esc(p.title)}${p.place?`<div class="dim" style="font-size:13px">${esc(p.place)}</div>`:''}</td><td>${esc(p.client||'')}</td><td><span class="tag ${s[1]}">${s[0]}</span></td><td>${p.deadline?esc(fd(p.deadline)):''}</td><td class="r">${p.price?eur0(p.price):''}</td></tr>`}).join('')}</tbody></table>`
+   :`<div class="empty"><p>${all.length?'Nič nezodpovedá filtru.':'Zatiaľ žiadne projekty. Začni cenovou ponukou – vyplníš zadávací list a vytvorí sa priečinok.'}</p></div>`}</div>`}
+
+function vProj(id){const p={...S.items[id],id};const s=pSt(p);const zl=p.zl||{};const calcs=p.calcs||[];const h=pHours(p);
+  const dl=(k,v)=>v&&(!Array.isArray(v)||v.length)?`<tr><td class="dim" style="width:38%">${k}</td><td>${esc(Array.isArray(v)?v.join(', '):v)}</td></tr>`:'';
+  setTimeout(()=>pLoadFiles(id),0);
+  return `<div class="tbar" style="margin-bottom:10px"><button class="btn q" onclick="S.proj=null;render()">← Projekty</button></div>
+  <div class="head"><div><div class="dim" style="font-size:13px;letter-spacing:.08em">${p.typ==='cp'?'CENOVÁ PONUKA':'ZÁKAZKA'}${p.cpNo?' · z ponuky '+esc(p.cpNo):''}</div><h1>${esc(p.no)} – ${esc(p.title)}</h1><p class="lead">${esc([p.client,p.place].filter(Boolean).join(' · '))} <span class="tag ${s[1]}" style="margin-left:6px">${s[0]}</span></p></div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <button class="btn" onclick="editProj('${id}')">Zadávací list</button>
+    ${p.typ==='cp'&&!['zamietnuta'].includes(p.status)?`<button class="btn p" onclick="pConvert('${id}')">Previesť na zákazku</button>`:''}
+    ${p.typ==='zk'?`<button class="btn ${p.status==='rozprac'?'p':''}" onclick="pProtocol('${id}')">Odovzdávací protokol</button>`:''}
+   </div></div>
+  <div class="figs">
+   <div class="fig"><div class="v">${p.price?eur0(p.price):'–'}</div><div class="k">Cena</div></div>
+   <div class="fig"><div class="v">${p.deadline?esc(fd(p.deadline)):'–'}</div><div class="k">Termín</div></div>
+   <div class="fig"><div class="v">${h?h.toLocaleString('sk-SK',{maximumFractionDigits:1})+' h':'0 h'}</div><div class="k">Odpracované (číslo v poznámke časomeru)</div></div>
+   <div class="fig"><div class="v">${calcs.length}</div><div class="k">Výpočtov</div></div>
+  </div>
+  <div class="cols">
+   <div class="panel"><h3>Zadávací list</h3><table><tbody>
+    ${dl('Klient',p.client)}${dl('Kontakt',[zl.person,zl.phone,zl.email].filter(Boolean).join(', '))}${dl('Miesto stavby',p.place)}${dl('Typ stavby',zl.type)}${dl('Konštrukcia',zl.mat)}${dl('Rozsah prác',zl.scope)}${dl('Podklady',zl.docs)}${dl('Stupeň',zl.stage)}${dl('Poznámka',zl.note)}
+   </tbody></table>${!zl.type&&!zl.scope?'<p class="dim">Zadávací list zatiaľ nie je vyplnený.</p>':''}
+   <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn sm" onclick="editProj('${id}')">Upraviť</button><button class="btn sm" onclick="pZlPdf('${id}')">Uložiť PDF do priečinka</button></div></div>
+   <div class="panel"><h3>Výpočty</h3>${calcs.length?`<table><tbody>${calcs.slice().reverse().map((c,i)=>`<tr><td class="b">${esc(c.name)}<div class="dim" style="font-weight:400;font-size:12.5px">${esc(c.mod==='tram'?'Drevený trám':c.mod)} · ${esc(fd(c.date))}</div></td><td class="r"><span class="tag ${c.u<=1?'ok':'bad'}">${Math.round(c.u*100)} %</span></td><td class="r" style="white-space:nowrap">${c.url?`<a class="btn sm" href="${esc(c.url)}" target="_blank" rel="noopener">PDF</a> `:''}<button class="btn sm" onclick="pOpenCalc('${id}',${calcs.length-1-i})">Otvoriť</button></td></tr>`).join('')}</tbody></table>`:'<p class="dim">Zatiaľ žiadne výpočty.</p>'}
+   <button class="btn sm" style="margin-top:10px" onclick="S.calcProj='${id}';S.calc=null;go('vypocty')">+ Nový výpočet</button></div>
+  </div>
+  <div class="panel" style="margin-top:16px"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">Priečinok v OneDrive</h3><div style="display:flex;gap:8px">${pFs()?`<button class="btn sm" onclick="pMakeFolders('${id}')">Vytvoriť / doplniť priečinky</button>`:''}<a class="btn sm" id="pOpen" style="display:none" target="_blank" rel="noopener">Otvoriť v OneDrive</a></div></div>
+   <div class="dim" style="font-size:13px;margin:6px 0 10px">${esc(pFolder(p))}</div><div id="pFiles">${pFs()?'<p class="dim">Načítavam súbory…</p>':'<p class="dim">Priečinky a súbory fungujú v appke na app.lnstatik.sk.</p>'}</div></div>
+  <div style="margin-top:14px;display:flex;justify-content:flex-end"><button class="btn q bad" onclick="if(sure(this,'Zmazať záznam? (priečinok v OneDrive ostane)')){del('${id}');S.proj=null;render()}">Zmazať záznam</button></div>`}
+
+async function pLoadFiles(id){const p=S.items[id];const box=$('#pFiles');if(!p||!box||!pFs())return;
+  try{const root=await AUTH.listDir(pFolder(p));if(!$('#pFiles'))return;
+    if(!root){box.innerHTML='<p class="dim">Priečinok ešte neexistuje. Klikni na „Vytvoriť / doplniť priečinky“.</p>';return}
+    const it=await AUTH.item(pFolder(p));if(it&&$('#pOpen')){$('#pOpen').href=it.webUrl;$('#pOpen').style.display=''}
+    const subs=root.filter(x=>x.folder).sort((a,b)=>a.name.localeCompare(b.name));const files=root.filter(x=>x.file);
+    const inner=await Promise.all(subs.map(f=>AUTH.listDir(pFolder(p)+'/'+f.name).catch(()=>[])));
+    const fl=x=>`<a href="${esc(x.webUrl)}" target="_blank" rel="noopener" style="display:block;font-size:13.5px;padding:2px 0">${esc(x.name)}</a>`;
+    box.innerHTML=`<div class="pgrid">${subs.map((f,i)=>`<div class="pfold"><a href="${esc(f.webUrl)}" target="_blank" rel="noopener" class="b" style="color:var(--ink);text-decoration:none">📁 ${esc(f.name)}</a><span class="dim" style="font-size:12px"> ${(inner[i]||[]).length||''}</span>${(inner[i]||[]).filter(x=>x.file).slice(0,6).map(fl).join('')}${(inner[i]||[]).length>6?'<div class="dim" style="font-size:12px">…</div>':''}</div>`).join('')}</div>${files.length?`<div style="margin-top:10px">${files.map(fl).join('')}</div>`:''}`}
+  catch(e){console.warn(e);box.innerHTML='<p class="dim">Súbory sa nepodarilo načítať.</p>'}}
+async function pMakeFolders(id,quiet){const p=S.items[id];if(!p||!pFs())return false;
+  try{const f=pFolder(p);await AUTH.mkdir(f);for(const s of P_SUB)await AUTH.mkdir(f+'/'+s);if(!p.folder){S.items[id]={...S.items[id],folder:f};save(id,S.items[id])}if(!quiet)toast('Priečinky sú pripravené');if(S.proj===id)pLoadFiles(id);return true}
+  catch(e){console.warn(e);toast('Priečinky sa nepodarilo vytvoriť');return false}}
+
+function editProj(id,typ){const p=id?{...S.items[id]}:{typ,no:pNext(typ),title:'',client:'',place:'',status:'rozprac',deadline:'',price:'',zl:{},created:today()};const zl=p.zl||{};
+  const cb=(nm,arr,sel)=>`<div class="chips">${arr.map(v=>`<label class="chip"><input type="checkbox" name="${nm}" value="${esc(v)}" ${(sel||[]).includes(v)?'checked':''}> ${esc(v)}</label>`).join('')}</div>`;
+  modal(`<h2>${id?'Zadávací list – '+esc(p.no):(typ==='cp'?'Nová cenová ponuka ':'Nová zákazka ')+esc(p.no)}</h2><form id="pf">
+  <div class="fr"><div class="f"><label>Názov projektu</label><input name="title" value="${esc(p.title)}" placeholder="napr. RD Novák – krov a strop" required></div><div class="f"><label>Klient</label><input name="client" list="pcl" value="${esc(p.client)}" placeholder="firma alebo meno"><datalist id="pcl">${clientNames().map(n=>`<option value="${esc(n)}">`).join('')}</datalist></div></div>
+  <div class="fr"><div class="f"><label>Kontaktná osoba</label><input name="person" value="${esc(zl.person||'')}"></div><div class="f"><label>Telefón</label><input name="phone" value="${esc(zl.phone||'')}"></div><div class="f"><label>E-mail</label><input name="email" type="email" value="${esc(zl.email||'')}"></div></div>
+  <div class="fr"><div class="f"><label>Miesto stavby</label><input name="place" value="${esc(p.place||'')}"></div><div class="f"><label>Typ stavby</label><select name="type"><option value=""></option>${P_TYP.map(v=>`<option ${v===zl.type?'selected':''}>${v}</option>`).join('')}</select></div><div class="f" style="max-width:130px"><label>Skratka typu</label><input name="code" value="${esc(zl.code||'')}" placeholder="RD_N"></div><div class="f"><label>Stupeň</label><select name="stage"><option value=""></option>${P_STU.map(v=>`<option ${v===zl.stage?'selected':''}>${v}</option>`).join('')}</select></div></div>
+  <div class="f"><label>Konštrukcia</label>${cb('mat',P_MAT,zl.mat)}</div>
+  <div class="f"><label>Rozsah prác</label>${cb('scope',P_ROZ,zl.scope)}</div>
+  <div class="f"><label>Podklady od klienta</label>${cb('docs',P_POD,zl.docs)}</div>
+  <div class="fr"><div class="f"><label>Termín</label><input name="deadline" type="date" value="${esc(p.deadline||'')}"></div><div class="f"><label>Cena (€)</label><input name="price" type="number" step="1" value="${esc(p.price||'')}"></div><div class="f"><label>Stav</label><select name="status">${Object.entries(PST[p.typ]).map(([k,v])=>`<option value="${k}" ${k===p.status?'selected':''}>${v[0]}</option>`).join('')}</select></div></div>
+  <div class="f"><label>Poznámka</label><textarea name="note" rows="3">${esc(zl.note||'')}</textarea></div>
+  ${!id&&pFs()?'<p class="dim" style="font-size:13px">Po uložení sa v OneDrive vytvorí priečinok <b>1_Projekty/'+esc(p.no)+' - Typ - Mesto - Meno</b> s podpriečinkami ako vo vzore.</p>':''}
+  <div class="mfoot"><div></div><div style="display:flex;gap:8px"><button type="button" class="btn" onclick="closeModal()">Zrušiť</button><button class="btn p">Uložiť</button></div></div></form>`);
+  const f=$('#pf');f.onsubmit=async ev=>{ev.preventDefault();const d=new FormData(f);const oldFolder=id?pFolder(S.items[id]):null;
+    const o={...p,kind:'proj',title:(d.get('title')||'').trim(),client:(d.get('client')||'').trim(),place:d.get('place')||'',deadline:d.get('deadline')||'',price:d.get('price')||'',status:d.get('status'),
+      zl:{code:(d.get('code')||'').trim(),person:d.get('person')||'',phone:d.get('phone')||'',email:d.get('email')||'',type:d.get('type')||'',stage:d.get('stage')||'',mat:d.getAll('mat'),scope:d.getAll('scope'),docs:d.getAll('docs'),note:d.get('note')||''}};
+    const nid=id||('pr_'+uid());closeModal();
+    if(id&&pFs()&&o.folder&&!o.legacy){const nf='1_Projekty/'+pName(o);if(nf!==o.folder){try{if(await AUTH.item(o.folder)){await AUTH.rename(o.folder,nf.split('/').pop());o.folder=nf}}catch(e){toast('Priečinok sa nepodarilo premenovať')}}}
+    await save(nid,o);S.proj=nid;render();if(!id)pMakeFolders(nid,true).then(ok=>ok&&toast('Vytvorený priečinok '+o.no))}}
+
+async function pConvert(id){const p={...S.items[id]};const no=pNext('zk');
+  modal(`<h2>Previesť ${esc(p.no)} na zákazku</h2><p>Ponuka dostane číslo zákazky <b>${esc(no)}</b> a priečinok sa premenuje na nové číslo.</p>
+  <div class="mfoot"><div></div><div style="display:flex;gap:8px"><button class="btn" onclick="closeModal()">Zrušiť</button><button class="btn p" id="pcv" onclick="pConvertGo('${id}')">Previesť na ${esc(no)}</button></div></div>`)}
+async function pConvertGo(id){closeModal();const p={...S.items[id]};const no=pNext('zk');const old=pFolder(p);const o={...p,typ:'zk',cpNo:p.no,no,status:'rozprac',converted:today()};
+    if(pFs()&&!p.legacy){const nf='1_Projekty/'+pName(o);try{if(await AUTH.item(old)){await AUTH.rename(old,nf.split('/').pop());o.folder=nf}}catch(e){toast('Priečinok sa nepodarilo premenovať')}}
+    await save(id,o);await pMakeFolders(id,true);toast('Zákazka '+no+' je založená');render()}
+
+async function pImport(){let dirs;try{dirs=await AUTH.listDir('1_Projekty')}catch(e){toast('Priečinok 1_Projekty sa nepodarilo načítať');return}
+  const used=new Set(pList().map(p=>pFolder(p)));const cand=(dirs||[]).filter(d=>d.folder&&!/^\d{6} - Typ - Mesto - Meno$/.test(d.name)&&!used.has('1_Projekty/'+d.name));
+  if(!cand.length){toast('Všetky priečinky sú už pripojené');return}
+  modal(`<h2>Pripojiť existujúce projekty</h2><p class="dim">Priečinky z 1_Projekty, ktoré ešte nie sú v prehľade. Pripojením sa nič nepremenuje ani nepresunie.</p><form id="pif"><div style="display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow:auto">${cand.map(d=>`<label class="chip" style="border-radius:8px"><input type="checkbox" name="d" value="${esc(d.name)}" checked> ${esc(d.name)}</label>`).join('')}</div>
+  <div class="mfoot"><div></div><div style="display:flex;gap:8px"><button type="button" class="btn" onclick="closeModal()">Zrušiť</button><button class="btn p">Pripojiť</button></div></div></form>`);
+  $('#pif').onsubmit=async ev=>{ev.preventDefault();const names=new FormData(ev.target).getAll('d');closeModal();
+    for(const n of names){const no=(n.match(/^\S+?(?=[\s_-])/)||[n])[0];const rest=n.slice(no.length).replace(/^[\s_-]+/,'');const pt=rest.split(' - ');
+      await save('pr_'+uid(),{kind:'proj',typ:'zk',no,title:rest,client:pt.length>=3?pt[2]:'',place:pt.length>=3?pt[1]:'',status:'rozprac',deadline:'',price:'',zl:pt.length>=3?{code:pt[0]}:{},folder:'1_Projekty/'+n,legacy:true,created:today()})}
+    toast('Pripojené: '+names.length);render()}}
+// ----- PDF dokumenty -----
+function docShell(title,no,body){const b=settings().biz||{};
+  return `<div style="width:794px;min-height:1123px;padding:56px 64px;box-sizing:border-box;font:13px/1.55 'Schibsted Grotesk',system-ui,sans-serif;color:#1F2328;background:#fff">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1F2328;padding-bottom:14px;margin-bottom:22px">${sig(12,'#8B929B','#1F2328')}<div style="text-align:right;font-size:11.5px;color:#4E555D">${esc(b.name||'LN · STATIK')}<br>${esc([b.street,b.city].filter(Boolean).join(', '))}${b.email?'<br>'+esc(b.email):''}</div></div>
+  <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#868D96">${esc(no)}</div><h1 style="font-size:24px;margin:2px 0 18px">${esc(title)}</h1>${body}</div>`}
+const dRow=(k,v)=>v&&(!Array.isArray(v)||v.length)?`<tr><td style="padding:6px 10px 6px 0;color:#868D96;width:34%;vertical-align:top;border-bottom:1px solid #EEF0F1">${k}</td><td style="padding:6px 0;border-bottom:1px solid #EEF0F1">${esc(Array.isArray(v)?v.join(', '):v)}</td></tr>`:'';
+async function htmlPdf(html){await need('html2pdf',LIB.h2p);const h=$('#paper');h.innerHTML=html;try{await document.fonts.ready}catch(e){}
+  const blob=await html2pdf().set({margin:0,image:{type:'jpeg',quality:0.85},html2canvas:{scale:2,backgroundColor:'#ffffff',useCORS:true},jsPDF:{unit:'px',format:[794,1123],hotfixes:['px_scaling']},pagebreak:{mode:['css','legacy']}}).from(h.firstElementChild).outputPdf('blob');h.innerHTML='';return blob}
+async function pSavePdf(p,sub,name,html){const blob=await htmlPdf(html);
+  if(pFs()){await pMakeFolders(p.id,true);if(sub)await AUTH.mkdir(pFolder(S.items[p.id]||p)+'/'+sub);p={...p,...S.items[p.id]};const r=await AUTH.putFile(pFolder(p)+(sub?'/'+sub:'')+'/'+name,blob,'application/pdf');return r&&r.webUrl}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();return ''}
+async function pZlPdf(id){const p={...S.items[id],id};const zl=p.zl||{};toast('Pripravujem PDF…');
+  const body=`<table style="width:100%;border-collapse:collapse">${dRow('Názov',p.title)}${dRow('Klient',p.client)}${dRow('Kontaktná osoba',zl.person)}${dRow('Telefón',zl.phone)}${dRow('E-mail',zl.email)}${dRow('Miesto stavby',p.place)}${dRow('Typ stavby',zl.type)}${dRow('Stupeň',zl.stage)}${dRow('Konštrukcia',zl.mat)}${dRow('Rozsah prác',zl.scope)}${dRow('Podklady od klienta',zl.docs)}${dRow('Termín',p.deadline?fd(p.deadline):'')}${dRow('Cena',p.price?eur(p.price):'')}${dRow('Poznámka',zl.note)}</table>
+  <p style="margin-top:28px;color:#868D96;font-size:11.5px">Vyhotovené ${esc(fd(today()))}</p>`;
+  try{const url=await pSavePdf(p,P_DATA,'Zadavaci_list_'+p.no+'.pdf',docShell('Zadávací list',p.no,body));toast(url?'Zadávací list je uložený v priečinku':'PDF je stiahnuté');if(S.proj===id)pLoadFiles(id)}catch(e){console.warn(e);toast('PDF sa nepodarilo uložiť')}}
+function pProtocol(id){const p={...S.items[id],id};const pr=p.proto||{};const IT=['Statický výpočet','Výkresová dokumentácia','Technická správa','Posudok','Návrh sanácie / zosilnenia'];
+  modal(`<h2>Odovzdávací protokol – ${esc(p.no)}</h2><form id="opf">
+  <div class="fr"><div class="f"><label>Dátum odovzdania</label><input type="date" name="date" value="${esc(pr.date||today())}"></div><div class="f"><label>Prevzal (meno)</label><input name="who" value="${esc(pr.who||(p.zl||{}).person||'')}"></div></div>
+  <div class="f"><label>Odovzdané</label><div class="chips">${IT.map(v=>`<label class="chip"><input type="checkbox" name="items" value="${v}" ${(pr.items||['Statický výpočet']).includes(v)?'checked':''}> ${v}</label>`).join('')}</div></div>
+  <div class="fr"><div class="f"><label>Forma</label><select name="form">${['elektronicky (PDF)','tlačené','elektronicky aj tlačené'].map(v=>`<option ${v===pr.form?'selected':''}>${v}</option>`).join('')}</select></div><div class="f"><label>Počet paré (tlačené)</label><input name="pare" type="number" min="0" value="${esc(pr.pare||'')}"></div></div>
+  <div class="f"><label>Poznámky, predpoklady, obmedzenia</label><textarea name="note" rows="3">${esc(pr.note||'')}</textarea></div>
+  <label class="chip" style="margin-bottom:10px"><input type="checkbox" name="done" checked> Označiť zákazku ako odovzdanú</label>
+  <div class="mfoot"><div></div><div style="display:flex;gap:8px"><button type="button" class="btn" onclick="closeModal()">Zrušiť</button><button class="btn p">Vytvoriť protokol</button></div></div></form>`);
+  $('#opf').onsubmit=async ev=>{ev.preventDefault();const d=new FormData(ev.target);const proto={date:d.get('date'),who:d.get('who'),items:d.getAll('items'),form:d.get('form'),pare:d.get('pare'),note:d.get('note')};closeModal();toast('Pripravujem protokol…');
+    const body=`<table style="width:100%;border-collapse:collapse">${dRow('Zákazka',p.no+' – '+p.title)}${dRow('Objednávateľ',p.client)}${dRow('Miesto stavby',p.place)}${dRow('Dátum odovzdania',fd(proto.date))}${dRow('Odovzdané',proto.items)}${dRow('Forma',proto.form+(proto.pare?' – '+proto.pare+' paré':''))}${dRow('Poznámky',proto.note)}</table>
+    <div style="display:flex;justify-content:space-between;gap:40px;margin-top:90px"><div style="flex:1;border-top:1px solid #1F2328;padding-top:6px;font-size:12px">Odovzdal: ${esc((settings().biz||{}).name||'LN · STATIK')}</div><div style="flex:1;border-top:1px solid #1F2328;padding-top:6px;font-size:12px">Prevzal: ${esc(proto.who||'')}</div></div>`;
+    try{const url=await pSavePdf(p,P_DONE,'Odovzdavaci_protokol_'+p.no+'.pdf',docShell('Odovzdávací protokol',p.no,body));
+      const o={...S.items[id],proto};if(d.get('done'))o.status='odovzdana';await save(id,o);toast(url?'Protokol je uložený v '+P_DONE:'PDF je stiahnuté')}catch(e){console.warn(e);toast('Protokol sa nepodarilo vytvoriť')}}}
+
+// ===== výpočty =====
+const TP={L:4,b:100,h:200,mat:'C24',sc:1,gk:1,qk:1.5,self:true,dur:'med',psi2:0.3,gG:1.35,gQ:1.5,l1:300,l2:250};
+const CMODS=[{id:'tram',n:'Drevený trám – prostý nosník',d:'Ohyb, šmyk a priehyb pri rovnomernom zaťažení (STN EN 1995-1-1)'}];
+function vCalcs(){if(S.calc==='tram')return vTramCalc();
+  return `<div class="head"><div><h1>Výpočty</h1><p class="lead">Výpočtové moduly. Výsledok sa dá uložiť ako PDF priamo do zákazky.</p></div></div>
+  <div class="cgrid">${CMODS.map(m=>`<button class="ccard" onclick="S.calc='${m.id}';render()"><b>${esc(m.n)}</b><span>${esc(m.d)}</span></button>`).join('')}<div class="ccard soon"><b>Ďalšie moduly</b><span>Krokva, strop, spoje… pribudnú postupne.</span></div></div>`}
+function vTramCalc(){const p={...TP,...(S.calcIn||{})};const projs=pList().filter(x=>!['zamietnuta','fakturovana'].includes(x.status)).sort((a,b)=>String(b.no).localeCompare(String(a.no)));
+  const num=(k,l,u,st='any')=>`<div class="f"><label>${l} <span class="dim">[${u}]</span></label><input type="number" step="${st}" name="${k}" value="${p[k]}" required></div>`;
+  setTimeout(tramRun,0);
+  return `<div class="tbar" style="margin-bottom:10px"><button class="btn q" onclick="S.calc=null;render()">← Výpočty</button></div>
+  <div class="head"><div><h1>Drevený trám – prostý nosník</h1><p class="lead">Rovnomerné zaťaženie; ohyb, šmyk a priehyb podľa STN EN 1995-1-1. Predpoklad: tlačený okraj zabezpečený proti klopeniu.</p></div></div>
+  <div class="ctl"><form id="tf" class="panel">
+   <h3>Zákazka</h3><div class="fr"><div class="f"><label>Uložiť do</label><select name="proj"><option value="">— bez zákazky —</option>${projs.map(x=>`<option value="${x.id}" ${x.id===S.calcProj?'selected':''}>${esc(x.no)} – ${esc(x.title)}</option>`).join('')}</select></div><div class="f"><label>Označenie prvku</label><input name="name" value="${esc(S.calcName||'')}" placeholder="napr. Strop – trám T1"></div></div>
+   <h3>Geometria</h3><div class="fr">${num('L','Rozpätie L','m')}${num('b','Šírka b','mm','1')}${num('h','Výška h','mm','1')}</div>
+   <h3>Materiál</h3><div class="fr"><div class="f"><label>Trieda</label><select name="mat">${Object.keys(MAT).map(k=>`<option ${k===p.mat?'selected':''}>${k}</option>`).join('')}</select></div><div class="f"><label>Trieda prevádzky</label><select name="sc">${[1,2,3].map(k=>`<option value="${k}" ${k==p.sc?'selected':''}>${k} – ${['','vnútri, vykurované','pod strechou','vonku'][k]}</option>`).join('')}</select></div></div>
+   <h3>Zaťaženie (charakteristické)</h3><div class="fr">${num('gk','Stále g_k','kN/m')}${num('qk','Premenné q_k','kN/m')}</div>
+   <label class="chip"><input type="checkbox" name="self" ${p.self?'checked':''}> Pripočítať vlastnú tiaž</label>
+   <div class="fr" style="margin-top:10px"><div class="f"><label>Trvanie premenného</label><select name="dur">${DUR.filter(d=>d[0]!=='perm').map(([k,n])=>`<option value="${k}" ${k===p.dur?'selected':''}>${n}</option>`).join('')}</select></div>${num('psi2','ψ₂','–')}</div>
+   <details><summary class="dim" style="cursor:pointer">Súčinitele a limity priehybu</summary><div class="fr" style="margin-top:8px">${num('gG','γ_G','–')}${num('gQ','γ_Q','–')}${num('l1','w_inst ≤ L/','–','1')}${num('l2','w_fin ≤ L/','–','1')}</div></details>
+  </form><div id="tr"></div></div>`}
+function tramRead(){const f=$('#tf');if(!f)return null;const d=new FormData(f);const q={};for(const k of Object.keys(TP)){const v=d.get(k);q[k]=k==='mat'||k==='dur'?v:k==='self'?!!v:+v}S.calcIn=q;S.calcProj=d.get('proj')||null;S.calcName=d.get('name')||'';return q}
+function tramRun(){const f=$('#tf');if(!f)return;f.oninput=tramRun;const q=tramRead();if(!(q.L>0&&q.b>0&&q.h>0)){$('#tr').innerHTML='<div class="panel dim">Zadaj rozmery väčšie ako nula.</div>';return}
+  const r=tramCalc(q);$('#tr').innerHTML=tramHTML(r,q,false)+`<div class="panel" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button class="btn" onclick="tramPdf(false)">Stiahnuť PDF</button><button class="btn p" onclick="tramPdf(true)" ${S.calcProj?'':'disabled title="Vyber zákazku"'}>Uložiť do zákazky</button></div>`}
+const nf=(x,d=2)=>Number(x).toLocaleString('sk-SK',{minimumFractionDigits:d,maximumFractionDigits:d});const pc=u=>Math.round(u*100)+' %';
+function tramHTML(r,q,pdf){const m=r.m,cm=r.cm,cv=r.cv,ok=r.u<=1;const durN=k=>(DUR.find(d=>d[0]===k)||[,k])[1];
+  const bar=(n,u,t)=>`<div style="border:1px solid #E3E6E8;border-radius:10px;padding:10px 14px;margin-bottom:8px;background:#fff"><div style="display:flex;justify-content:space-between"><b>${n}</b><b style="color:${u<=1?'#1E6B43':'#B42318'}">${pc(u)}</b></div><div style="height:6px;background:#EEF0F1;border-radius:6px;margin:6px 0"><div style="height:6px;border-radius:6px;width:${Math.min(u,1)*100}%;background:${u<=1?'#2E7D4F':'#B42318'}"></div></div><div style="font-size:12.5px;color:#4E555D">${t}</div></div>`;
+  const P=s=>`<p style="margin:3px 0">${s}</p>`,H=s=>`<h4 style="margin:14px 0 4px;font-size:13.5px">${s}</h4>`;
+  return `<div ${pdf?'':'class="panel"'}>
+  ${pdf?`<table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12.5px">${dRow('Prvok',S.calcName||'—')}${dRow('Prierez',q.b+' × '+q.h+' mm, '+m.n+', trieda prevádzky '+q.sc)}${dRow('Rozpätie',nf(q.L,2)+' m')}${dRow('Zaťaženie',`g_k = ${nf(q.gk,2)} kN/m${q.self?' + vlastná tiaž':''}, q_k = ${nf(q.qk,2)} kN/m (${durN(q.dur)}, ψ₂ = ${nf(q.psi2,2)})`)}</table>`:''}
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:10px;margin-bottom:10px;background:${ok?'#E7F4EC':'#FDECEA'};color:${ok?'#1E6B43':'#B42318'}"><b style="font-size:18px">${ok?'Vyhovuje':'Nevyhovuje'}</b><span>max. využitie ${pc(r.u)}</span></div>
+  ${bar('Ohyb',cm.um,`σ<sub>m,d</sub> = ${nf(cm.sig)} MPa ≤ f<sub>m,d</sub> = ${nf(cm.fmd)} MPa`)}${bar('Šmyk',cv.uv,`τ<sub>d</sub> = ${nf(cv.tau)} MPa ≤ f<sub>v,d</sub> = ${nf(cv.fvd)} MPa`)}
+  ${bar('Priehyb okamžitý',r.ui,`w<sub>inst</sub> = ${nf(r.winst,1)} mm ≤ L/${q.l1} = ${nf(r.lim1,1)} mm`)}${bar('Priehyb konečný',r.uf,`w<sub>fin</sub> = ${nf(r.wfin,1)} mm ≤ L/${q.l2} = ${nf(r.lim2,1)} mm`)}
+  <details ${pdf?'open':''} style="font-size:13px;margin-top:6px"><summary style="cursor:pointer;font-weight:600">Postup výpočtu</summary>
+  ${H('1. Prierez a materiál')}${P(`A = ${nf(r.A,0)} mm², W = ${nf(r.W/1e3,1)}·10³ mm³, I = ${nf(r.I/1e6,2)}·10⁶ mm⁴`)}${P(`${m.n}: f<sub>m,k</sub> = ${nf(m.fm,1)} MPa, f<sub>v,k</sub> = ${nf(m.fv,1)} MPa, E<sub>0,mean</sub> = ${nf(m.E,0)} MPa, ρ<sub>mean</sub> = ${m.rm} kg/m³, γ<sub>M</sub> = ${nf(r.gM)}`)}
+  ${P(`k<sub>h</sub> = ${nf(r.kh,3)}, k<sub>cr</sub> = ${nf(r.kcr)}, k<sub>def</sub> = ${nf(r.kd,1)}`)}
+  ${H('2. Zaťaženie a vnútorné sily')}${P(`${q.self?`g<sub>s</sub> = ${nf(r.gs,3)} kN/m; `:''}G<sub>k</sub> = ${nf(r.G,3)} kN/m, Q<sub>k</sub> = ${nf(r.Q,3)} kN/m`)}
+  ${r.combos.map(c=>P(`${c.n} (${durN(c.dur)}): E<sub>d</sub> = ${nf(c.Ed,3)} kN/m, k<sub>mod</sub> = ${nf(c.km)}, M<sub>d</sub> = ${nf(c.M,3)} kNm, V<sub>d</sub> = ${nf(c.V,3)} kN → ohyb ${pc(c.um)}, šmyk ${pc(c.uv)}`)).join('')}
+  ${H('3. Ohyb (čl. 6.1.6)')}${P(`σ<sub>m,d</sub> = M<sub>d</sub>/W = ${nf(cm.sig)} MPa; f<sub>m,d</sub> = k<sub>mod</sub>·k<sub>h</sub>·f<sub>m,k</sub>/γ<sub>M</sub> = ${nf(cm.fmd)} MPa → ${pc(cm.um)}`)}
+  ${H('4. Šmyk (čl. 6.1.7)')}${P(`τ<sub>d</sub> = 1,5·V<sub>d</sub>/(k<sub>cr</sub>·b·h) = ${nf(cv.tau,3)} MPa; f<sub>v,d</sub> = ${nf(cv.fvd,3)} MPa → ${pc(cv.uv)}`)}
+  ${H('5. Priehyb (čl. 2.2.3, 7.2)')}${P(`w<sub>inst,G</sub> = ${nf(r.wG)} mm, w<sub>inst,Q</sub> = ${nf(r.wQ)} mm, w<sub>inst</sub> = ${nf(r.winst)} mm → ${pc(r.ui)}`)}${P(`w<sub>fin</sub> = w<sub>inst,G</sub>(1+k<sub>def</sub>) + w<sub>inst,Q</sub>(1+ψ<sub>2</sub>k<sub>def</sub>) = ${nf(r.wfin)} mm → ${pc(r.uf)}`)}
+  <p style="color:#868D96;font-size:11.5px;margin-top:10px">Odporúčané hodnoty STN EN 1995-1-1 a kombinácia 6.10; zanedbaná šmyková deformácia; klopenie neposúdené (k<sub>crit</sub> = 1).</p></details></div>`}
+async function tramPdf(toProj){const q=tramRead();const r=tramCalc(q);const p=toProj&&S.calcProj?{...S.items[S.calcProj],id:S.calcProj}:null;if(toProj&&!p){toast('Vyber zákazku');return}
+  const nm=(S.calcName||'Tram').trim();const fn=`${p?p.no+'_':''}${pSafe(nm).replace(/[–—]/g,'-').replace(/ /g,'_')}_${today()}.pdf`;toast('Pripravujem PDF…');
+  const html=docShell('Drevený trám – prostý nosník',p?p.no+' – '+p.title:'Výpočet',tramHTML(r,q,true));
+  try{if(p){const url=await pSavePdf(p,P_CALC,fn,html);const o={...S.items[p.id]};o.calcs=[...(o.calcs||[]),{mod:'tram',name:nm,date:today(),u:r.u,in:q,url:url||'',file:fn}];await save(p.id,o);toast('Výpočet je uložený v zákazke '+p.no)}
+    else{const blob=await htmlPdf(html);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;a.click()}}catch(e){console.warn(e);toast('PDF sa nepodarilo vytvoriť')}}
+function pOpenCalc(id,i){const c=(S.items[id].calcs||[])[i];if(!c)return;S.calcIn=c.in;S.calcProj=id;S.calcName=c.name;S.calc=c.mod;go('vypocty')}
+
 // ===== nav =====
-$('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(b)go(b.dataset.v)});
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(b){if(b.dataset.v==='projekty')S.proj=null;if(b.dataset.v==='vypocty')S.calc=null;go(b.dataset.v)}});
 function go(v){S.view=v;try{history.replaceState(null,'','#'+v)}catch(e){}render();window.scrollTo(0,0)}
 window.addEventListener('hashchange',()=>{const v=location.hash.slice(1);if(S.mode==='full'&&VIEWS.includes(v)){S.view=v;render()}});
 function render(){
@@ -536,7 +779,7 @@ function render(){
   const r=settings().running;
   $('#mini').innerHTML=r?`<div class="mini" onclick="go('cas')"><div class="c" id="miniClock">${dur(Date.now()-r.start)}</div><div class="s">${esc(r.client||'')}${r.note?' – '+esc(r.note):''}</div></div>`:'';
   const off=S.offline?`<div class="note">Dáta sa nepodarilo načítať z OneDrive. Skontroluj pripojenie a obnov stránku.</div>`:'';
-  $('#main').innerHTML=off+({prehlad:vOverview,faktury:vInvoices,cas:vTime,odberatelia:vClients,vydavky:vExpenses,kapela:vBand,kalendar:vCal,nastavenia:vSettings})[S.view]();
+  $('#main').innerHTML=off+({prehlad:vOverview,projekty:vProjects,vypocty:vCalcs,faktury:vInvoices,cas:vTime,odberatelia:vClients,vydavky:vExpenses,kapela:vBand,kalendar:vCal,nastavenia:vSettings})[S.view]();
   if(S.view==='prehlad')bindChart();
 }
 setInterval(()=>{const r=settings().running;if(!r)return;const t=dur(Date.now()-r.start);const a=$('#miniClock');if(a)a.textContent=t;const b=$('#clock');if(b)b.textContent=t},1000);

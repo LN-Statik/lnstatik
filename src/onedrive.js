@@ -116,6 +116,19 @@ AUTH.calSync=async(evs,map,calName)=>{const t=await token(['Calendars.ReadWrite'
 AUTH.savePdf=async(inv,blob)=>{if(!base)return;const y=String(inv.issueDate||'').slice(0,4)||'bez_roku';const n=String(inv.number||'faktura').replace(/[^\w-]/g,'');
   try{await g(`/me/drive/root:/${enc(base+'/LNStatik_zaloha/Faktury_PDF/'+y+'/Faktura_'+n+'.pdf')}:/content`,{method:'PUT',headers:{'Content-Type':'application/pdf'},body:blob})}catch(e){console.warn('pdf',e)}};
 
+
+// ---------- súbory projektov ----------
+const proot=()=>base.replace(/\/4_LNStatik\/2_Financie$/,'');const rel=p=>proot()+'/'+String(p).replace(/^\/+/,'');
+AUTH.fsOk=()=>!!base;
+AUTH.mkdir=async(path)=>{const parts=String(path).split('/').filter(Boolean);let cur=proot();
+  for(const nm of parts){const r=await g(`/me/drive/root:/${enc(cur)}:/children`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:nm,folder:{},'@microsoft.graph.conflictBehavior':'fail'})});
+    if(!r.ok&&r.status!==409)throw new Error('mkdir '+r.status);cur+='/'+nm}
+  const it=await g(`/me/drive/root:/${enc(cur)}?$select=id,webUrl,name`);return it.ok?it.json():null};
+AUTH.putFile=async(path,blob,type)=>{const r=await g(`/me/drive/root:/${enc(rel(path))}:/content`,{method:'PUT',headers:{'Content-Type':type||'application/octet-stream'},body:blob});if(!r.ok)throw new Error('put '+r.status);return r.json()};
+AUTH.item=async(path)=>{const r=await g(`/me/drive/root:/${enc(rel(path))}?$select=id,webUrl,name`);return r.ok?r.json():null};
+AUTH.rename=async(path,name)=>{const r=await g(`/me/drive/root:/${enc(rel(path))}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})});if(!r.ok)throw new Error('rename '+r.status);return r.json()};
+AUTH.listDir=async(path)=>{const r=await g(`/me/drive/root:/${enc(rel(path))}:/children?$select=name,webUrl,size,lastModifiedDateTime,folder,file&$top=200`);if(r.status===404)return null;if(!r.ok)throw new Error('list '+r.status);return (await r.json()).value||[]};
+
 // ---------- Outlook koncept ----------
 AUTH.mailDraft=async({subject,html,to,pdfs,logo})=>{const t=await token(['Mail.ReadWrite']);
   const att=pdfs.map(p=>({'@odata.type':'#microsoft.graph.fileAttachment',name:p.name,contentType:'application/pdf',contentBytes:p.b64}));
