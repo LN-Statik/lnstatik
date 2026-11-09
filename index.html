@@ -293,7 +293,7 @@ body.m-start #gate{display:flex}body.m-start .app{display:none}
 .gate .gb .ar{color:var(--ink3);font-size:20px}.gate .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2E7D4F;margin-left:8px;vertical-align:middle}
 .gate .pin{display:flex;gap:8px;margin-top:4px}.gate .pin input{flex:1;text-align:center;font-size:20px;letter-spacing:.4em}
 .wgrid{display:grid;grid-template-columns:250px minmax(0,1fr);gap:18px;align-items:start}@media(max-width:800px){.wgrid{grid-template-columns:1fr}}.wside{padding:12px;position:sticky;top:12px}.wside input{width:100%;box-sizing:border-box;margin-bottom:8px}.wside .wgh{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3,#868D96);font-weight:700;margin:12px 6px 4px}.wside button{display:block;width:100%;text-align:left;border:0;background:none;padding:6px 8px;border-radius:7px;font:inherit;font-size:14px;cursor:pointer;color:var(--ink)}.wside button.on,.wside button:hover{background:var(--paper,#F2F3F1)}.wph{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid var(--line2);padding-bottom:10px;margin-bottom:8px}.wph h1{margin:2px 0 0;font-size:26px}.wcat{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3,#868D96);font-weight:700}.wbody{font-size:15px;line-height:1.6}.wbody h2{font-size:19px;margin:18px 0 6px}.wbody h3{font-size:16px;margin:14px 0 4px}.wbody h4{font-size:14.5px;margin:12px 0 4px}.wbody p{margin:6px 0}.wbody code{background:#F1F2F0;padding:1px 5px;border-radius:4px}.wtb{border-collapse:collapse;margin:8px 0}.wtb td{border:1px solid var(--line);padding:5px 10px}.wtb tr:first-child td{font-weight:600;background:#F7F8F7}.wedh{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:10px}.wed textarea{width:100%;box-sizing:border-box;min-height:420px;font:14px/1.55 ui-monospace,Menlo,monospace}.whelp{font-size:12px;color:var(--ink3,#868D96);margin:6px 0 10px}
-#admNav{display:none}body.adm #admNav{display:block}#lockBtn{display:none}body.adm #lockBtn{display:block}body.adm #admBtn{display:none}#admNav small{display:block}body.m-time aside{display:none}body.m-time .app{grid-template-columns:1fr}body.m-time main{max-width:980px;margin:0 auto}body.m-time.m-wide main{max-width:1240px}.wbar{gap:18px}.wtabs{display:flex;gap:4px;background:#E8E9E6;border-radius:12px;padding:4px;margin-right:auto;margin-left:14px}.wtabs button{border:0;background:none;padding:8px 18px;border-radius:9px;font:inherit;font-size:14.5px;font-weight:600;color:#59616B;cursor:pointer;display:inline-flex;align-items:center;gap:7px}.wtabs button.on{background:#fff;color:#1F2328;box-shadow:0 1px 2px rgba(0,0,0,.08)}#nav button[data-w]{color:#9AA0A8}
+body.nown #admBtn{display:none}#admNav{display:none}body.adm #admNav{display:block}#lockBtn{display:none}body.adm #lockBtn{display:block}body.adm #admBtn{display:none}#admNav small{display:block}body.m-time aside{display:none}body.m-time .app{grid-template-columns:1fr}body.m-time main{max-width:980px;margin:0 auto}body.m-time.m-wide main{max-width:1240px}.wbar{gap:18px}.wtabs{display:flex;gap:4px;background:#E8E9E6;border-radius:12px;padding:4px;margin-right:auto;margin-left:14px}.wtabs button{border:0;background:none;padding:8px 18px;border-radius:9px;font:inherit;font-size:14.5px;font-weight:600;color:#59616B;cursor:pointer;display:inline-flex;align-items:center;gap:7px}.wtabs button.on{background:#fff;color:#1F2328;box-shadow:0 1px 2px rgba(0,0,0,.08)}#nav button[data-w]{color:#9AA0A8}
 .tbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}
 .lockbtn{background:none;border:1px solid var(--side2);color:var(--sideink);border-radius:6px;padding:7px 10px;font:inherit;font-size:13px;cursor:pointer;margin-top:8px}.lockbtn:hover{color:#fff}
 .fold summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center}.fold summary::-webkit-details-marker{display:none}.fold .chev{color:var(--ink3);font-size:20px;transition:transform .15s}.fold[open] .chev{transform:rotate(90deg)}
@@ -320,7 +320,9 @@ const enc=p=>p.split('/').map(encodeURIComponent).join('/');
 
 let msal=null,account=null;
 const AUTH={ok:false,ready:false,err:'',user:''};
+// Zapamätané prihlásenie len pre majiteľa (účet z tenantu LN-Statik); ostatní sa prihlasujú pri každom otvorení.
 const REM=(()=>{try{let r=localStorage.getItem('lns_remember');if(r===null){r=Object.keys(localStorage).some(k=>k.includes(CFG.clientId||'~'))?'1':'0';localStorage.setItem('lns_remember',r)}return r==='1'}catch(e){return false}})();
+const isOwner=a=>!!(a&&CFG.tenantId&&String(a.homeAccountId||'').toLowerCase().endsWith('.'+String(CFG.tenantId).toLowerCase()));
 AUTH.remember=REM;
 window.AUTH=AUTH;
 
@@ -329,10 +331,9 @@ AUTH.loginHTML=function(){
   return `<div class="gate"><div class="lg">${(typeof sig!=='undefined'?sig(15,'#8B929B','#1F2328'):'')}</div>
    <div class="day" style="font-size:26px">Prihlásenie</div><div class="dt" style="text-transform:none">Dáta sú uložené v tvojom OneDrive.</div>
    ${AUTH.err?`<p style="color:var(--bad);font-size:14px">${AUTH.err}</p>`:''}
-   <label style="display:flex;align-items:center;gap:8px;justify-content:center;margin:4px 0 12px;font-size:14px;color:var(--ink2);cursor:pointer"><input type="checkbox" id="remIn" ${REM?'checked':''} style="width:auto;margin:0"> Zapamätať prihlásenie na tomto zariadení</label>
    <button class="gb" onclick="AUTH.login()"><span>Prihlásiť sa cez Microsoft<small>Konto LN-Statika</small></span><span class="ar">›</span></button>
    <a class="gb" href="/kalendar/" style="text-decoration:none;color:inherit"><span>SB Kalendár<small>Kapela – akcie a dovolenky</small></span><span class="ar">›</span></a></div>`};
-AUTH.login=()=>{const r=!!(document.getElementById('remIn')||{}).checked;try{localStorage.setItem('lns_remember',r?'1':'0');if(r!==REM){sessionStorage.setItem('lns_autologin','1');location.reload();return}}catch(e){}msal.loginRedirect({scopes:SCOPES,prompt:r?'select_account':'login'})};
+AUTH.login=()=>msal.loginRedirect({scopes:SCOPES,prompt:REM?'select_account':'login'});
 AUTH.logout=()=>{try{Object.keys(localStorage).filter(k=>k.startsWith('msal.')||k.includes(CFG.clientId)).forEach(k=>localStorage.removeItem(k));sessionStorage.clear()}catch(e){}msal.logoutRedirect({account})};
 
 async function token(sc){sc=sc||SCOPES;
@@ -465,7 +466,9 @@ async function start(){
   account=account||msal.getAllAccounts()[0]||null;
   AUTH.ready=true;
   if(!account){try{if(sessionStorage.getItem('lns_autologin')){sessionStorage.removeItem('lns_autologin');msal.loginRedirect({scopes:SCOPES,prompt:REM?'select_account':'login'});return}}catch(x){}if(window.render)render();return}
-  AUTH.ok=true;AUTH.user=account.username||'';if(window.render)render();
+  try{const own=isOwner(account);if(own&&!REM)localStorage.setItem('lns_remember','1');
+    if(!own&&REM){localStorage.setItem('lns_remember','0');Object.keys(localStorage).filter(k=>k.startsWith('msal.')||k.includes(CFG.clientId)).forEach(k=>localStorage.removeItem(k));sessionStorage.setItem('lns_autologin','1');location.reload();return}}catch(x){}
+  AUTH.ok=true;AUTH.owner=isOwner(account);AUTH.user=account.username||'';if(window.render)render();
   try{if(sessionStorage.getItem('lns_after_consent')){sessionStorage.removeItem('lns_after_consent');setTimeout(()=>{try{toast('Outlook je povolený. Otvor faktúru a klikni znova na Otvoriť v Outlooku.')}catch(x){}},1500)}}catch(x){}
   try{await findBase();state=await pull();loaded=true;readyRes()}catch(e){console.error(e);AUTH.err='Nepodarilo sa načítať dáta z OneDrive.';readyRej(e)}
 }
@@ -590,11 +593,12 @@ function drawGate(){const now=new Date();const run=settings().running;const g=$(
    ${window.AUTH&&AUTH.ok?'<p style="margin-top:26px"><button class="btn q sm" onclick="AUTH.logout()">Odhlásiť sa</button></p>':''}
   </div>`;if(ask)setTimeout(()=>{const i=$('#pinIn');if(i)i.focus()},30)}
 
-function enterFull(){if(S.admin){go('prehlad');return}if(settings().pin){modal(`<h2>Admin</h2><p class="dim">Zadaj PIN pre prehľady, financie a nastavenia.</p><form class="pin" style="margin:14px 0 4px" onsubmit="event.preventDefault();tryPin()"><input id="pinIn" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN" aria-label="PIN"><button class="btn p">Odomknúť</button></form>`);setTimeout(()=>{const i=$('#pinIn');if(i)i.focus()},40);return}openFull();if(false){setTimeout(()=>modal(`<h2>Nastaviť PIN?</h2><p class="dim">Keď si appku otvoríš u niekoho iného, bez PIN-u sa do firmy nedostane. Odpracované hodiny ostanú bez PIN-u.</p>
+const PIN0='7befe05e2959c6531b58025a2a28dd2116625bfd78724cf48a6dd70e9692a2bb';
+function enterFull(){if(S.admin){go('prehlad');return}if(true){modal(`<h2>Admin</h2><p class="dim">Zadaj PIN pre prehľady, financie a nastavenia.</p><form class="pin" style="margin:14px 0 4px" onsubmit="event.preventDefault();tryPin()"><input id="pinIn" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN" aria-label="PIN"><button class="btn p">Odomknúť</button></form>`);setTimeout(()=>{const i=$('#pinIn');if(i)i.focus()},40);return}openFull();if(false){setTimeout(()=>modal(`<h2>Nastaviť PIN?</h2><p class="dim">Keď si appku otvoríš u niekoho iného, bez PIN-u sa do firmy nedostane. Odpracované hodiny ostanú bez PIN-u.</p>
    <div class="f"><label>Nový PIN (4 až 8 číslic)</label><input id="np" type="password" inputmode="numeric" autocomplete="new-password"></div>
    <div class="mfoot"><div></div><div style="display:flex;gap:8px"><button class="btn" onclick="closeModal()">Neskôr</button><button class="btn p" onclick="setPin($('#np').value)">Uložiť PIN</button></div></div>`),300)}}
 function openFull(){closeModal();S.admin=true;S.lastAct=Date.now();go('prehlad')}
-async function tryPin(){const v=($('#pinIn')||{}).value||'';if(await pinHash(v)===settings().pin)openFull();else{toast('Nesprávny PIN');const i=$('#pinIn');if(i){i.value='';i.focus()}}}
+async function tryPin(){const v=($('#pinIn')||{}).value||'';const hv=await pinHash(v);if(hv===PIN0||(settings().pin&&hv===settings().pin))openFull();else{toast('Nesprávny PIN');const i=$('#pinIn');if(i){i.value='';i.focus()}}}
 async function setPin(v){v=String(v||'').trim();if(v&&!/^\d{4,8}$/.test(v)){toast('PIN musí mať 4 až 8 číslic');return}
   await save('settings',{...settings(),pin:v?await pinHash(v):''});closeModal();toast(v?'PIN je nastavený':'PIN je zrušený')}
 function lockApp(){closeModal();S.admin=false;if(ADMV.includes(S.view))S.view='uvod';render();window.scrollTo(0,0)}
@@ -1270,7 +1274,7 @@ $('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-v]'
 window.addEventListener('hashchange',()=>{const v=location.hash.slice(1);if(VIEWS.includes(v)&&v!==S.view&&(S.admin||!ADMV.includes(v))){S.view=v;render()}});
 function render(){
   const authed=!window.AUTH||AUTH.ok;S.mode=authed?'app':'start';
-  document.body.classList.toggle('m-start',!authed);document.body.classList.remove('m-time','m-wide');document.body.classList.toggle('adm',!!S.admin);
+  document.body.classList.toggle('m-start',!authed);document.body.classList.remove('m-time','m-wide');document.body.classList.toggle('adm',!!S.admin);document.body.classList.toggle('nown',!!(window.AUTH&&AUTH.ok&&AUTH.owner===false));
   if(!authed){drawGate();return}
   if(ADMV.includes(S.view)&&!S.admin)S.view='uvod';if(!VIEWS.includes(S.view))S.view='uvod';
   drawBrand();
